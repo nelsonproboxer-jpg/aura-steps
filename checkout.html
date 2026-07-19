@@ -22,7 +22,7 @@
     <div class="container page-head">
       <p class="eyebrow">Secure checkout</p>
       <h1>Almost yours.</h1>
-      <span class="demo-banner">Demo mode — no real payment is processed.</span>
+      <span class="demo-banner">Pay securely with crypto · Card payments arriving soon</span>
     </div>
 
     <section class="section container" style="padding-top: 1.4rem;">
@@ -42,33 +42,10 @@
           <input type="text" placeholder="Country" autocomplete="country-name" required />
 
           <h3>Payment method</h3>
-          <div class="pay-tabs">
-            <button type="button" class="pay-tab active" data-pay="card">💳 Card</button>
-            <button type="button" class="pay-tab" data-pay="bank">🏦 Bank Transfer</button>
-            <button type="button" class="pay-tab" data-pay="crypto">🪙 Crypto</button>
-          </div>
+          <p class="pay-lead">Pay with cryptocurrency — fast, borderless and secure. <strong>Card payments (Visa, Mastercard, Amex, Discover) are arriving soon.</strong></p>
 
-          <div id="pay-card">
-            <p class="pay-note">Card payments will be processed securely by <strong>Stripe</strong> once the store goes live. Demo fields below.</p>
-            <input type="text" placeholder="Card number" inputmode="numeric" />
-            <div class="field-row">
-              <input type="text" placeholder="MM / YY" />
-              <input type="text" placeholder="CVC" inputmode="numeric" />
-            </div>
-            <input type="text" placeholder="Name on card" />
-          </div>
-
-          <div id="pay-bank" hidden>
-            <div class="bank-box">
-              <p><span>Bank</span><strong>Aura Trust Bank (Demo)</strong></p>
-              <p><span>Account name</span><strong>Aura Steps Ltd.</strong></p>
-              <p><span>Account number</span><strong>0123 4567 89</strong></p>
-              <p><span>Reference</span><strong id="bankRef">AS-REF</strong></p>
-            </div>
-            <p class="pay-note">Transfer the exact total and use the reference above. Your order is confirmed once payment reflects.</p>
-          </div>
-
-          <div id="pay-crypto" hidden>
+          <div id="pay-crypto">
+            <label class="field-label" for="cryptoCoin">Choose your coin</label>
             <select id="cryptoCoin" aria-label="Choose cryptocurrency">
               <option value="BTC">Bitcoin (BTC)</option>
               <option value="ETH">Ethereum (ETH)</option>
@@ -78,7 +55,7 @@
               <p><span>Network</span><strong id="walletNetwork"></strong></p>
               <p><span>Send to</span><strong class="wallet" id="walletAddr"></strong></p>
             </div>
-            <p class="pay-note">Send the exact crypto equivalent of your total to this address on the <strong>network shown above only</strong> — sending via a different network can permanently lose the funds. Your order confirms after 1 network confirmation.</p>
+            <p class="pay-note">Send the exact crypto equivalent of your total to this address on the <strong>network shown above only</strong> — sending via a different network can permanently lose the funds. After you send, place your order below and we'll confirm your payment on-chain before dispatch.</p>
           </div>
 
           <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1.2rem;">Place Order</button>
@@ -97,9 +74,9 @@
 
   <div class="success-card" id="checkoutSuccess" hidden>
     <div class="success-ring" data-icon="check"></div>
-    <p class="eyebrow">Order confirmed</p>
+    <p class="eyebrow">Order received</p>
     <h2>Thank you, beautiful.</h2>
-    <p>Your order <strong id="orderRef"></strong> is being prepared with care.<br />A confirmation email is on its way.</p>
+    <p>Your order <strong id="orderRef"></strong> is in. Once we confirm your crypto payment on-chain,<br />we'll email you and prepare your pair with care.</p>
     <a href="shop.html" class="btn btn-primary">Continue Shopping</a>
   </div>
 

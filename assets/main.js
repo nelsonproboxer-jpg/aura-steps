@@ -96,12 +96,11 @@ function renderChrome(active) {
       </div>
       <div class="footer-col">
         <h5>Payments</h5>
-        <a href="checkout.html">Card · via Stripe</a>
-        <a href="checkout.html">Bank Transfer</a>
         <a href="checkout.html">Crypto · BTC / ETH / USDT</a>
+        <a href="checkout.html">Card · coming soon</a>
       </div>
     </div>
-    <p class="footer-note">© 2026 Aura Steps. Demo storefront — payments are simulated.</p>`;
+    <p class="footer-note">© 2026 Aura Steps · Walk in your own aura.</p>`;
   }
 }
 
@@ -388,23 +387,12 @@ function initCheckout() {
   $("#coSubtotal").textContent = money(sub);
   $("#coShipping").textContent = ship === 0 ? "Complimentary" : money(ship);
   $("#coTotal").textContent = money(sub + ship);
-  $("#bankRef").textContent = "AS-" + Math.floor(100000 + Math.random() * 900000);
   const showWallet = (coin) => {
     const w = WALLETS[coin];
     $("#walletAddr").textContent = w.address;
     $("#walletNetwork").textContent = w.network;
   };
   showWallet("BTC");
-
-  $$(".pay-tab").forEach((tab) => {
-    tab.addEventListener("click", () => {
-      $$(".pay-tab").forEach((t) => t.classList.remove("active"));
-      tab.classList.add("active");
-      ["card", "bank", "crypto"].forEach((k) => {
-        $("#pay-" + k).hidden = k !== tab.dataset.pay;
-      });
-    });
-  });
   $("#cryptoCoin").addEventListener("change", (e) => showWallet(e.target.value));
 
   $("#checkoutForm").addEventListener("submit", (e) => {

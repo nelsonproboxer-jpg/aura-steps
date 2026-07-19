@@ -481,6 +481,9 @@ img { max-width: 100%; }
 .success-card h2 { font-size: 2.4rem; margin-bottom: 0.8rem; }
 .success-card p { color: hsl(var(--muted-foreground)); margin-bottom: 1.8rem; }
 
+.pay-lead { font-size: 0.9rem; color: hsl(var(--muted-foreground)); margin-bottom: 1rem; }
+.field-label { display: block; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: hsl(var(--muted-foreground)); margin-bottom: 0.4rem; }
+
 /* ---------- Footer ---------- */
 .site-footer { background: hsl(30 8% 10%); color: hsl(40 30% 92%); padding: 4rem 1.5rem 2rem; margin-top: 4rem; }
 .dark .site-footer { background: hsl(240 8% 4%); }
