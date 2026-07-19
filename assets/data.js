@@ -12,23 +12,6 @@ const CURRENCY = "$";
 const FREE_SHIPPING_OVER = 500;
 const SHIPPING_FLAT = 40;
 
-/* ---- Card payments (Paystack) ----
-   A pk_test_ key runs in TEST MODE: only Paystack test cards work and real
-   cards are declined. To charge real customers, activate your Paystack
-   account and swap in your pk_live_ key below.
-   PAYSTACK_CURRENCY: what the customer is charged in. Charging in USD needs
-   USD enabled on your Paystack account (Settings → Preferences). If your
-   account is naira-only, set this to "NGN" and the USD price is converted
-   at USD_TO_NGN. */
-const PAYSTACK_PUBLIC_KEY = "pk_test_cbb72db3aecf3f8a0eaa8f337766b46c7ead3f45";
-const PAYSTACK_CURRENCY = "NGN"; // account is naira-only; switch to "USD" once USD is enabled on Paystack
-const USD_TO_NGN = 1600;
-
-/* Master switch for the card option. Kept false until (1) USD is enabled on
-   the Paystack account so US customers are charged in dollars, and (2) a
-   pk_live_ key is in place. While false, checkout shows crypto only. */
-const CARD_ENABLED = false;
-
 /* Orders are emailed here via FormSubmit — no signup, no API key. On the
    first order it sends a one-time activation email to this address; click
    the link once and every future order lands in this inbox. */

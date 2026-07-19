@@ -397,25 +397,6 @@ function initCheckout() {
   showWallet("BTC");
   $("#cryptoCoin").addEventListener("change", (e) => showWallet(e.target.value));
 
-  // payment-method tabs — card is gated behind CARD_ENABLED
-  const cardOn = typeof CARD_ENABLED !== "undefined" && CARD_ENABLED;
-  let method = cardOn ? "card" : "crypto";
-  if (!cardOn) {
-    const tabsBar = $(".pay-tabs");
-    if (tabsBar) tabsBar.hidden = true;
-    $("#pay-card").hidden = true;
-    $("#pay-crypto").hidden = false;
-  }
-  $$(".pay-tab").forEach((tab) => {
-    tab.addEventListener("click", () => {
-      $$(".pay-tab").forEach((t) => t.classList.remove("active"));
-      tab.classList.add("active");
-      method = tab.dataset.pay;
-      $("#pay-card").hidden = method !== "card";
-      $("#pay-crypto").hidden = method !== "crypto";
-    });
-  });
-
   const form = $("#checkoutForm");
   form.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -431,49 +412,9 @@ function initCheckout() {
       country: inputs[6].value.trim(),
     };
     const ref = "AS-" + Math.floor(100000 + Math.random() * 900000);
-    if (method === "card") {
-      payWithCard({ ref, total, cart, shipping });
-    } else {
-      const coin = $("#cryptoCoin").value;
-      finalizeOrder({ ref, total, cart, shipping, method: `Crypto — ${coin} (${WALLETS[coin].network})` });
-    }
+    const coin = $("#cryptoCoin").value;
+    finalizeOrder({ ref, total, cart, shipping, method: `Crypto — ${coin} (${WALLETS[coin].network})` });
   });
-}
-
-function paystackAmount(usd) {
-  // Paystack expects the smallest currency unit (cents / kobo)
-  if (PAYSTACK_CURRENCY === "USD") return Math.round(usd * 100);
-  return Math.round(usd * USD_TO_NGN) * 100;
-}
-
-function payWithCard({ ref, total, cart, shipping }) {
-  if (typeof PaystackPop === "undefined") {
-    toast("Card payment couldn't load — please try crypto, or refresh the page.");
-    return;
-  }
-  const handler = PaystackPop.setup({
-    key: PAYSTACK_PUBLIC_KEY,
-    email: shipping.email,
-    amount: paystackAmount(total),
-    currency: PAYSTACK_CURRENCY,
-    channels: ["card"],
-    ref,
-    metadata: {
-      custom_fields: [
-        { display_name: "Items", variable_name: "items",
-          value: cart.map((i) => { const p = productById(i.id); return `${p.name} US ${i.size} x${i.qty}`; }).join(", ") },
-        { display_name: "Ship to", variable_name: "ship_to",
-          value: `${shipping.firstName} ${shipping.lastName}, ${shipping.address}, ${shipping.city} ${shipping.postal}, ${shipping.country}` },
-      ],
-    },
-    callback: function (response) {
-      finalizeOrder({ ref: response.reference || ref, total, cart, shipping, method: "Card (Paystack)" });
-    },
-    onClose: function () {
-      toast("Payment window closed — your order was not placed.");
-    },
-  });
-  handler.openIframe();
 }
 
 function finalizeOrder({ ref, total, cart, shipping, method }) {
