@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product — Aura Steps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body data-page="product">
+
+  <header class="site-header" id="siteHeader"></header>
+
+  <section class="section container" style="padding-top: 2.6rem;">
+    <nav class="breadcrumb" id="pdBreadcrumb"></nav>
+    <div class="pd-grid">
+      <div class="pd-image" id="pdImage"></div>
+      <div class="pd-info">
+        <p class="eyebrow" id="pdCategory"></p>
+        <h1 id="pdName"></h1>
+        <p class="pd-style" id="pdStyle"></p>
+        <p class="pd-price" id="pdPrice"></p>
+        <p class="pd-desc" id="pdDesc"></p>
+
+        <div class="pd-section">
+          <div class="pd-label-row">
+            <span>Select size (EU)</span>
+            <button class="link-btn" id="pdChartToggle">Size chart</button>
+          </div>
+          <div class="size-pills" id="pdSizes"></div>
+          <p class="size-error" id="pdSizeError" hidden>Please select a size first.</p>
+          <div class="pd-chart" id="pdChartWrap" hidden></div>
+        </div>
+
+        <div class="qty-row">
+          <div class="qty-control">
+            <button id="qtyDec" aria-label="Decrease quantity">−</button>
+            <span id="qtyVal">1</span>
+            <button id="qtyInc" aria-label="Increase quantity">+</button>
+          </div>
+          <button class="btn btn-primary" id="pdAdd" style="flex:1;">Add to Bag</button>
+        </div>
+        <p class="pd-fineprint">Free size exchange within 30 days · Ships in 2–4 days</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section container" style="padding-top: 1rem;">
+    <div class="section-head">
+      <p class="eyebrow">Complete the look</p>
+      <h2 style="font-size: 2rem;">You may also like</h2>
+    </div>
+    <div class="product-grid" id="relatedGrid"></div>
+  </section>
+
+  <footer class="site-footer" id="siteFooter"></footer>
+
+  <script src="assets/data.js"></script>
+  <script src="assets/main.js"></script>
+</body>
+</html>

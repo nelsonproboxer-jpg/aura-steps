@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aura Steps — Luxury Footwear for Her</title>
+  <meta name="description" content="Statement heels, polished flats and everyday icons — displayed beautifully, sized clearly." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body data-page="home">
+
+  <header class="site-header" id="siteHeader"></header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-ring" aria-hidden="true"></div>
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow"><span data-icon="sparkle"></span> The Aura Édit · 2026</p>
+        <h1>Shoes that make an <span>entrance.</span></h1>
+        <p class="hero-sub">Statement heels, polished flats and everyday icons — rendered in flawless detail, sized clearly and selected for confident steps.</p>
+        <div class="hero-ctas">
+          <a href="shop.html" class="btn btn-primary">Shop the Collection <span data-icon="arrow"></span></a>
+          <a href="size-guide.html" class="btn btn-outline">Find Your Size</a>
+        </div>
+        <div class="hero-tags">
+          <span>Secure checkout</span>
+          <span>Detailed size guide</span>
+          <span>Worldwide delivery</span>
+        </div>
+      </div>
+      <div class="hero-figure">
+        <div class="hero-figure-ring" aria-hidden="true"></div>
+        <div class="hero-figure-card">
+          <img src="images/heels-27.png" alt="Odette — peach crystal platform heel" />
+          <div class="hero-spot">
+            <div>
+              <p class="eyebrow">Spotlight</p>
+              <h3>The Crystal Hour</h3>
+            </div>
+            <a href="product.html?id=h27">Shop heels</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Value props -->
+  <section class="value-props">
+    <div class="value-grid">
+      <div class="value-item reveal">
+        <span class="vicon" data-icon="gem"></span>
+        <div><h3>Crafted Quality</h3><p>Premium materials selected for comfort and lasting beauty.</p></div>
+      </div>
+      <div class="value-item reveal">
+        <span class="vicon" data-icon="truck"></span>
+        <div><h3>Complimentary Shipping over $500</h3><p>Free delivery on qualifying orders, worldwide.</p></div>
+      </div>
+      <div class="value-item reveal">
+        <span class="vicon" data-icon="refresh"></span>
+        <div><h3>30-Day Easy Returns</h3><p>Not the perfect fit? Exchanges made effortless.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured -->
+  <section class="section container">
+    <div class="row-head">
+      <div>
+        <p class="eyebrow">Curated for you</p>
+        <h2 style="font-size: clamp(2rem, 3.6vw, 2.8rem);">Featured Pieces</h2>
+      </div>
+      <a href="shop.html" class="btn btn-outline">View all <span data-icon="arrow"></span></a>
+    </div>
+    <div class="product-grid" id="featuredGrid"></div>
+  </section>
+
+  <!-- Story -->
+  <section class="story">
+    <div class="story-grid">
+      <div class="story-collage reveal">
+        <div class="tile tile-1"><img src="images/heels-01.png" alt="Celeste ivory pump" /></div>
+        <div class="tile tile-2"><img src="images/boots-16.png" alt="Greta ivory bootie" /></div>
+        <div class="tile tile-3"><img src="images/flats-13.png" alt="Lena peach ballerina" /></div>
+      </div>
+      <div class="story-copy reveal">
+        <p class="eyebrow">Our story</p>
+        <h2>Where elegance meets every stride</h2>
+        <p>Aura Steps began with a simple belief: the right pair of shoes changes how you carry yourself through the world. Each piece in our collection is chosen for its balance of artistry, comfort and timeless design — so you never have to choose between beauty and ease.</p>
+        <div class="story-stats">
+          <div><span class="counter" data-target="12000" data-suffix="+">0</span><p>Happy customers</p></div>
+          <div><span class="counter" data-target="98" data-suffix="%">0</span><p>Fit satisfaction</p></div>
+          <div><span class="counter" id="stylesCount" data-target="32" data-suffix="+">0</span><p>Curated styles</p></div>
+        </div>
+        <a href="about.html" class="btn btn-primary" style="margin-top: 2rem;">Read our story <span data-icon="arrow"></span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- New arrivals -->
+  <section class="section container">
+    <div class="section-head center">
+      <p class="eyebrow">Just landed</p>
+      <h2>New Arrivals</h2>
+    </div>
+    <div class="product-grid" id="arrivalsGrid"></div>
+    <div style="text-align:center; margin-top: 2.6rem;">
+      <a href="shop.html" class="btn btn-dark">Explore the full collection <span data-icon="arrow"></span></a>
+    </div>
+  </section>
+
+  <footer class="site-footer" id="siteFooter"></footer>
+
+  <script src="assets/data.js"></script>
+  <script src="assets/main.js"></script>
+</body>
+</html>

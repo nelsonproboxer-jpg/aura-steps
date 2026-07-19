@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop — Aura Steps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body data-page="shop">
+
+  <header class="site-header" id="siteHeader"></header>
+
+  <div class="container page-head">
+    <p class="eyebrow">The Collection</p>
+    <h1>Shop Aura Steps</h1>
+    <p class="section-sub">Every silhouette photographed in flawless, frameless detail. Filter, search and find the pair that walks like you.</p>
+  </div>
+
+  <section class="section container" style="padding-top: 2.2rem;">
+    <div class="shop-toolbar">
+      <label class="search-wrap"><span data-icon="search"></span>
+        <input type="search" id="shopSearch" placeholder="Search styles, colours, names…" />
+      </label>
+      <button class="filter-chip active" data-filter="all">All</button>
+      <button class="filter-chip" data-filter="heels">Heels</button>
+      <button class="filter-chip" data-filter="flats">Flats</button>
+      <button class="filter-chip" data-filter="boots">Boots</button>
+      <select class="sort-select" id="shopSort" aria-label="Sort products">
+        <option value="featured">Sort · Featured</option>
+        <option value="price-asc">Price · Low to high</option>
+        <option value="price-desc">Price · High to low</option>
+        <option value="name">Name · A–Z</option>
+      </select>
+      <span class="shop-count" id="shopCount"></span>
+    </div>
+    <div class="product-grid" id="shopGrid"></div>
+  </section>
+
+  <footer class="site-footer" id="siteFooter"></footer>
+
+  <script src="assets/data.js"></script>
+  <script src="assets/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — Aura Steps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body data-page="checkout">
+
+  <header class="site-header" id="siteHeader"></header>
+
+  <div class="empty-state" id="checkoutEmpty" hidden>
+    <p>Your bag is empty — nothing to check out yet.</p>
+    <a href="shop.html" class="btn btn-primary">Explore the collection <span data-icon="arrow"></span></a>
+  </div>
+
+  <div id="checkoutContent">
+    <div class="container page-head">
+      <p class="eyebrow">Secure checkout</p>
+      <h1>Almost yours.</h1>
+      <span class="demo-banner">Demo mode — no real payment is processed.</span>
+    </div>
+
+    <section class="section container" style="padding-top: 1.4rem;">
+      <div class="checkout-grid">
+        <form class="checkout-form" id="checkoutForm">
+          <h3>Delivery details</h3>
+          <div class="field-row">
+            <input type="text" placeholder="First name" autocomplete="given-name" required />
+            <input type="text" placeholder="Last name" autocomplete="family-name" required />
+          </div>
+          <input type="email" placeholder="Email address" autocomplete="email" required />
+          <input type="text" placeholder="Street address" autocomplete="street-address" required />
+          <div class="field-row">
+            <input type="text" placeholder="City" autocomplete="address-level2" required />
+            <input type="text" placeholder="Postal code" autocomplete="postal-code" />
+          </div>
+          <input type="text" placeholder="Country" autocomplete="country-name" required />
+
+          <h3>Payment method</h3>
+          <div class="pay-tabs">
+            <button type="button" class="pay-tab active" data-pay="card">💳 Card</button>
+            <button type="button" class="pay-tab" data-pay="bank">🏦 Bank Transfer</button>
+            <button type="button" class="pay-tab" data-pay="crypto">🪙 Crypto</button>
+          </div>
+
+          <div id="pay-card">
+            <p class="pay-note">Card payments will be processed securely by <strong>Stripe</strong> once the store goes live. Demo fields below.</p>
+            <input type="text" placeholder="Card number" inputmode="numeric" />
+            <div class="field-row">
+              <input type="text" placeholder="MM / YY" />
+              <input type="text" placeholder="CVC" inputmode="numeric" />
+            </div>
+            <input type="text" placeholder="Name on card" />
+          </div>
+
+          <div id="pay-bank" hidden>
+            <div class="bank-box">
+              <p><span>Bank</span><strong>Aura Trust Bank (Demo)</strong></p>
+              <p><span>Account name</span><strong>Aura Steps Ltd.</strong></p>
+              <p><span>Account number</span><strong>0123 4567 89</strong></p>
+              <p><span>Reference</span><strong id="bankRef">AS-REF</strong></p>
+            </div>
+            <p class="pay-note">Transfer the exact total and use the reference above. Your order is confirmed once payment reflects.</p>
+          </div>
+
+          <div id="pay-crypto" hidden>
+            <select id="cryptoCoin" aria-label="Choose cryptocurrency">
+              <option value="BTC">Bitcoin (BTC)</option>
+              <option value="ETH">Ethereum (ETH)</option>
+              <option value="USDT">Tether (USDT)</option>
+            </select>
+            <div class="bank-box">
+              <p><span>Send to (demo address)</span><strong class="wallet" id="walletAddr"></strong></p>
+            </div>
+            <p class="pay-note">Send the equivalent amount. The order confirms after 1 network confirmation.</p>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1.2rem;">Place Order</button>
+        </form>
+
+        <aside class="summary-card">
+          <h3>Order Summary</h3>
+          <div id="coItems"></div>
+          <div class="summary-line"><span>Subtotal</span><span id="coSubtotal"></span></div>
+          <div class="summary-line"><span>Shipping</span><span id="coShipping"></span></div>
+          <div class="summary-line total"><span>Total</span><span id="coTotal"></span></div>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <div class="success-card" id="checkoutSuccess" hidden>
+    <div class="success-ring" data-icon="check"></div>
+    <p class="eyebrow">Order confirmed</p>
+    <h2>Thank you, beautiful.</h2>
+    <p>Your order <strong id="orderRef"></strong> is being prepared with care.<br />A confirmation email is on its way.</p>
+    <a href="shop.html" class="btn btn-primary">Continue Shopping</a>
+  </div>
+
+  <footer class="site-footer" id="siteFooter"></footer>
+
+  <script src="assets/data.js"></script>
+  <script src="assets/main.js"></script>
+</body>
+</html>
