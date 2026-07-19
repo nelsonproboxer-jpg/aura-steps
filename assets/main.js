@@ -109,7 +109,8 @@ function renderChrome(active) {
 
 function getCart() {
   let cart = JSON.parse(localStorage.getItem("aura-cart") || "[]");
-  return cart.filter((i) => productById(i.id));
+  // keep only items with an existing product and a valid US size
+  return cart.filter((i) => productById(i.id) && SIZE_CHART.some((r) => r.us == i.size));
 }
 function saveCart(cart) {
   localStorage.setItem("aura-cart", JSON.stringify(cart));
@@ -180,9 +181,9 @@ function productCardHTML(p) {
 function sizeTableHTML(compact = false) {
   return `
   <table class="size-table ${compact ? "compact" : ""}">
-    <thead><tr><th>EU</th><th>UK</th><th>US</th><th>Foot length (cm)</th></tr></thead>
+    <thead><tr><th>US</th><th>EU</th><th>UK</th><th>Foot length (cm)</th></tr></thead>
     <tbody>${SIZE_CHART.map(
-      (r) => `<tr><td>${r.eu}</td><td>${r.uk}</td><td>${r.us}</td><td>${r.cm}</td></tr>`
+      (r) => `<tr><td>${r.us}</td><td>${r.eu}</td><td>${r.uk}</td><td>${r.cm}</td></tr>`
     ).join("")}</tbody>
   </table>`;
 }
@@ -286,9 +287,9 @@ function initProduct() {
   SIZE_CHART.forEach((r) => {
     const b = document.createElement("button");
     b.className = "size-pill";
-    b.textContent = r.eu;
+    b.textContent = r.us;
     b.addEventListener("click", () => {
-      selectedSize = r.eu;
+      selectedSize = r.us;
       $("#pdSizeError").hidden = true;
       $$(".size-pill", pills).forEach((x) => x.classList.remove("selected"));
       b.classList.add("selected");
@@ -305,7 +306,7 @@ function initProduct() {
   $("#pdAdd").addEventListener("click", () => {
     if (!selectedSize) { $("#pdSizeError").hidden = false; return; }
     addToCart(p.id, selectedSize, qty);
-    toast(`${p.name} (EU ${selectedSize}) added to your bag`);
+    toast(`${p.name} (US ${selectedSize}) added to your bag`);
   });
 
   const related = PRODUCTS.filter((x) => x.category === p.category && x.id !== p.id).slice(0, 4);
@@ -336,7 +337,7 @@ function initCart() {
         <a class="cart-item-thumb" href="product.html?id=${p.id}">${productImage(p)}</a>
         <div class="cart-item-info">
           <h4><a href="product.html?id=${p.id}">${p.name}</a></h4>
-          <p class="cart-item-meta">${p.style} · EU ${item.size}</p>
+          <p class="cart-item-meta">${p.style} · US ${item.size}</p>
           <div class="cart-item-row">
             <div class="qty-control">
               <button data-act="dec" aria-label="Decrease">−</button>
@@ -382,7 +383,7 @@ function initCheckout() {
   const ship = sub >= FREE_SHIPPING_OVER ? 0 : SHIPPING_FLAT;
   $("#coItems").innerHTML = cart.map((i) => {
     const p = productById(i.id);
-    return `<div class="summary-item"><span>${p.name} · EU ${i.size} × ${i.qty}</span><span>${money(p.price * i.qty)}</span></div>`;
+    return `<div class="summary-item"><span>${p.name} · US ${i.size} × ${i.qty}</span><span>${money(p.price * i.qty)}</span></div>`;
   }).join("");
   $("#coSubtotal").textContent = money(sub);
   $("#coShipping").textContent = ship === 0 ? "Complimentary" : money(ship);
