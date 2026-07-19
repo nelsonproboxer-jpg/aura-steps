@@ -95,9 +95,10 @@ function renderChrome(active) {
         <a href="about.html">Our Story</a>
       </div>
       <div class="footer-col">
-        <h5>Payments</h5>
-        <a href="checkout.html">Crypto · BTC / ETH / USDT</a>
-        <a href="checkout.html">Card · coming soon</a>
+        <h5>Contact</h5>
+        <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>
+        <a href="tel:${SUPPORT_PHONE.replace(/[^+\\d]/g, "")}">${SUPPORT_PHONE}</a>
+        <span class="footer-addr">${SUPPORT_ADDRESS}</span>
       </div>
     </div>
     <p class="footer-note">© 2026 Aura Steps · Walk in your own aura.</p>`;
@@ -462,10 +463,35 @@ function sendOrderEmail({ ref, total, cart, shipping, method }) {
 /* ---------- Page: contact ---------- */
 
 function initContact() {
-  $("#contactForm").addEventListener("submit", (e) => {
+  const email = typeof SUPPORT_EMAIL !== "undefined" ? SUPPORT_EMAIL : ORDER_EMAIL;
+  const em = $("#ciEmail");
+  if (em) { em.textContent = email; em.href = "mailto:" + email; }
+  const ph = $("#ciPhone");
+  if (ph && typeof SUPPORT_PHONE !== "undefined") {
+    ph.textContent = SUPPORT_PHONE;
+    ph.href = "tel:" + SUPPORT_PHONE.replace(/[^+\d]/g, "");
+  }
+  const ad = $("#ciAddress");
+  if (ad && typeof SUPPORT_ADDRESS !== "undefined") ad.textContent = SUPPORT_ADDRESS;
+
+  const form = $("#contactForm");
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
-    e.target.reset();
-    toast("Message sent — we'll reply within one business day. (Demo)");
+    if (!form.reportValidity()) return;
+    const f = $$("input, textarea", form);
+    fetch("https://formsubmit.co/ajax/" + encodeURIComponent(ORDER_EMAIL), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        _subject: `Aura Steps enquiry — ${f[2].value}`,
+        Name: f[0].value,
+        Email: f[1].value,
+        Subject: f[2].value,
+        Message: f[3].value,
+      }),
+    }).catch(() => {});
+    form.reset();
+    toast("Message sent — we'll reply within one business day.");
   });
 }
 

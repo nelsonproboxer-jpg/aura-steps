@@ -17,6 +17,14 @@ const SHIPPING_FLAT = 40;
    the link once and every future order lands in this inbox. */
 const ORDER_EMAIL = "ugwunelson0@gmail.com";
 
+/* Public contact details shown on the site. SUPPORT_EMAIL is what customers
+   see; it starts receiving mail once the aurastepsusa.com domain + free
+   mailbox are set up. Until then, the contact form and orders still deliver
+   to ORDER_EMAIL above. */
+const SUPPORT_EMAIL = "support@aurastepsusa.com";
+const SUPPORT_PHONE = "+1 (213) 357-0150";
+const SUPPORT_ADDRESS = "85 Washington St, Delaware City, DE 19706";
+
 /* Crypto wallet addresses shown at checkout — these are Aura Steps'
    real PUBLIC receiving addresses. Each entry carries the network the
    customer must send on (sending on the wrong network can lose funds). */

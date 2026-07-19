@@ -482,6 +482,21 @@ img { max-width: 100%; }
 .success-card p { color: hsl(var(--muted-foreground)); margin-bottom: 1.8rem; }
 
 .pay-lead { font-size: 0.9rem; color: hsl(var(--muted-foreground)); margin-bottom: 1rem; }
+
+/* ---------- Contact page ---------- */
+.contact-grid { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 2.4rem; align-items: start; }
+.contact-info {
+  background: hsl(var(--secondary) / 0.5); border: 1px solid hsl(var(--border) / 0.7);
+  border-radius: 1.2rem; padding: 1.8rem 1.8rem 2rem;
+}
+.contact-info h3 { font-size: 1.5rem; margin-bottom: 1.2rem; }
+.contact-line { padding: 0.7rem 0; border-top: 1px solid hsl(var(--border)); }
+.contact-line:first-of-type { border-top: none; }
+.ci-label { display: block; font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: hsl(var(--muted-foreground)); margin-bottom: 0.25rem; }
+.contact-line a, .contact-line span:not(.ci-label) { color: hsl(var(--foreground)); text-decoration: none; font-size: 0.95rem; }
+.contact-line a:hover { color: hsl(var(--primary)); }
+.footer-addr { display: block; opacity: 0.72; font-size: 0.88rem; margin-bottom: 0.55rem; line-height: 1.5; }
+@media (max-width: 760px) { .contact-grid { grid-template-columns: 1fr; } }
 .field-label { display: block; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: hsl(var(--muted-foreground)); margin-bottom: 0.4rem; }
 
 /* ---------- Footer ---------- */

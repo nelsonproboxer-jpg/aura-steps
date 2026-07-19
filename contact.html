@@ -19,16 +19,38 @@
     <p class="section-sub">Sizing question, order update or a style you're dreaming of — write to us and we'll reply within one business day.</p>
   </div>
 
-  <section class="section container" style="max-width: 640px; padding-top: 2rem;">
-    <form class="checkout-form" id="contactForm">
-      <div class="field-row">
-        <input type="text" placeholder="Your name" autocomplete="name" required />
-        <input type="email" placeholder="Email address" autocomplete="email" required />
-      </div>
-      <input type="text" placeholder="Subject" required />
-      <textarea placeholder="Your message…" rows="6" required></textarea>
-      <button type="submit" class="btn btn-primary">Send Message <span data-icon="arrow"></span></button>
-    </form>
+  <section class="section container" style="padding-top: 2rem;">
+    <div class="contact-grid">
+      <aside class="contact-info">
+        <h3>Reach us</h3>
+        <div class="contact-line">
+          <span class="ci-label">Email</span>
+          <a id="ciEmail" href="#"></a>
+        </div>
+        <div class="contact-line">
+          <span class="ci-label">Phone</span>
+          <a id="ciPhone" href="#"></a>
+        </div>
+        <div class="contact-line">
+          <span class="ci-label">Address</span>
+          <span id="ciAddress"></span>
+        </div>
+        <div class="contact-line">
+          <span class="ci-label">Hours</span>
+          <span>Mon–Fri · 9am–6pm ET</span>
+        </div>
+      </aside>
+
+      <form class="checkout-form" id="contactForm">
+        <div class="field-row">
+          <input type="text" placeholder="Your name" autocomplete="name" required />
+          <input type="email" placeholder="Email address" autocomplete="email" required />
+        </div>
+        <input type="text" placeholder="Subject" required />
+        <textarea placeholder="Your message…" rows="6" required></textarea>
+        <button type="submit" class="btn btn-primary">Send Message <span data-icon="arrow"></span></button>
+      </form>
+    </div>
   </section>
 
   <footer class="site-footer" id="siteFooter"></footer>
