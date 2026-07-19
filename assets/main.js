@@ -387,6 +387,8 @@ function initCheckout() {
   $("#coSubtotal").textContent = money(sub);
   $("#coShipping").textContent = ship === 0 ? "Complimentary" : money(ship);
   $("#coTotal").textContent = money(sub + ship);
+  const total = sub + ship;
+
   const showWallet = (coin) => {
     const w = WALLETS[coin];
     $("#walletAddr").textContent = w.address;
@@ -395,18 +397,125 @@ function initCheckout() {
   showWallet("BTC");
   $("#cryptoCoin").addEventListener("change", (e) => showWallet(e.target.value));
 
-  $("#checkoutForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const ref = "AS-" + Math.floor(100000 + Math.random() * 900000);
-    const orders = JSON.parse(localStorage.getItem("aura-orders") || "[]");
-    orders.push({ ref, date: new Date().toISOString(), total: sub + ship, items: cart });
-    localStorage.setItem("aura-orders", JSON.stringify(orders));
-    saveCart([]);
-    $("#orderRef").textContent = ref;
-    $("#checkoutContent").hidden = true;
-    $("#checkoutSuccess").hidden = false;
-    window.scrollTo(0, 0);
+  // payment-method tabs — card is gated behind CARD_ENABLED
+  const cardOn = typeof CARD_ENABLED !== "undefined" && CARD_ENABLED;
+  let method = cardOn ? "card" : "crypto";
+  if (!cardOn) {
+    const tabsBar = $(".pay-tabs");
+    if (tabsBar) tabsBar.hidden = true;
+    $("#pay-card").hidden = true;
+    $("#pay-crypto").hidden = false;
+  }
+  $$(".pay-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      $$(".pay-tab").forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+      method = tab.dataset.pay;
+      $("#pay-card").hidden = method !== "card";
+      $("#pay-crypto").hidden = method !== "crypto";
+    });
   });
+
+  const form = $("#checkoutForm");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!form.reportValidity()) return;
+    const inputs = $$("input", form);
+    const shipping = {
+      firstName: inputs[0].value.trim(),
+      lastName: inputs[1].value.trim(),
+      email: inputs[2].value.trim(),
+      address: inputs[3].value.trim(),
+      city: inputs[4].value.trim(),
+      postal: inputs[5].value.trim(),
+      country: inputs[6].value.trim(),
+    };
+    const ref = "AS-" + Math.floor(100000 + Math.random() * 900000);
+    if (method === "card") {
+      payWithCard({ ref, total, cart, shipping });
+    } else {
+      const coin = $("#cryptoCoin").value;
+      finalizeOrder({ ref, total, cart, shipping, method: `Crypto — ${coin} (${WALLETS[coin].network})` });
+    }
+  });
+}
+
+function paystackAmount(usd) {
+  // Paystack expects the smallest currency unit (cents / kobo)
+  if (PAYSTACK_CURRENCY === "USD") return Math.round(usd * 100);
+  return Math.round(usd * USD_TO_NGN) * 100;
+}
+
+function payWithCard({ ref, total, cart, shipping }) {
+  if (typeof PaystackPop === "undefined") {
+    toast("Card payment couldn't load — please try crypto, or refresh the page.");
+    return;
+  }
+  const handler = PaystackPop.setup({
+    key: PAYSTACK_PUBLIC_KEY,
+    email: shipping.email,
+    amount: paystackAmount(total),
+    currency: PAYSTACK_CURRENCY,
+    channels: ["card"],
+    ref,
+    metadata: {
+      custom_fields: [
+        { display_name: "Items", variable_name: "items",
+          value: cart.map((i) => { const p = productById(i.id); return `${p.name} US ${i.size} x${i.qty}`; }).join(", ") },
+        { display_name: "Ship to", variable_name: "ship_to",
+          value: `${shipping.firstName} ${shipping.lastName}, ${shipping.address}, ${shipping.city} ${shipping.postal}, ${shipping.country}` },
+      ],
+    },
+    callback: function (response) {
+      finalizeOrder({ ref: response.reference || ref, total, cart, shipping, method: "Card (Paystack)" });
+    },
+    onClose: function () {
+      toast("Payment window closed — your order was not placed.");
+    },
+  });
+  handler.openIframe();
+}
+
+function finalizeOrder({ ref, total, cart, shipping, method }) {
+  const orders = JSON.parse(localStorage.getItem("aura-orders") || "[]");
+  orders.push({ ref, date: new Date().toISOString(), total, method, shipping, items: cart });
+  localStorage.setItem("aura-orders", JSON.stringify(orders));
+  sendOrderEmail({ ref, total, cart, shipping, method });
+  saveCart([]);
+  $("#orderRef").textContent = ref;
+  const msg = $("#successMsg");
+  if (msg) {
+    msg.textContent = method.startsWith("Card")
+      ? "Your payment went through — a receipt is on its way and we'll prepare your pair with care."
+      : "Once we confirm your crypto payment on-chain, we'll email you and prepare your pair with care.";
+  }
+  $("#checkoutContent").hidden = true;
+  $("#checkoutSuccess").hidden = false;
+  window.scrollTo(0, 0);
+}
+
+function sendOrderEmail({ ref, total, cart, shipping, method }) {
+  if (typeof ORDER_EMAIL === "undefined" || !ORDER_EMAIL) return;
+  const items = cart.map((i) => {
+    const p = productById(i.id);
+    return `• ${p.name} — ${p.style} (US ${i.size}) ×${i.qty} — ${money(p.price * i.qty)}`;
+  }).join("\n");
+  const payload = {
+    _subject: `New Aura Steps order ${ref} — ${money(total)}`,
+    _template: "table",
+    Order: ref,
+    Total: money(total),
+    Paid_with: method,
+    Items: items,
+    Customer: `${shipping.firstName} ${shipping.lastName}`,
+    Email: shipping.email,
+    Ship_to: `${shipping.address}, ${shipping.city} ${shipping.postal}, ${shipping.country}`,
+  };
+  fetch("https://formsubmit.co/ajax/" + encodeURIComponent(ORDER_EMAIL), {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  }).catch(() => {});
 }
 
 /* ---------- Page: contact ---------- */

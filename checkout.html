@@ -22,7 +22,7 @@
     <div class="container page-head">
       <p class="eyebrow">Secure checkout</p>
       <h1>Almost yours.</h1>
-      <span class="demo-banner">Pay securely with crypto · Card payments arriving soon</span>
+      <span class="demo-banner">Secure checkout · Card &amp; crypto accepted</span>
     </div>
 
     <section class="section container" style="padding-top: 1.4rem;">
@@ -42,9 +42,16 @@
           <input type="text" placeholder="Country" autocomplete="country-name" required />
 
           <h3>Payment method</h3>
-          <p class="pay-lead">Pay with cryptocurrency — fast, borderless and secure. <strong>Card payments (Visa, Mastercard, Amex, Discover) are arriving soon.</strong></p>
+          <div class="pay-tabs">
+            <button type="button" class="pay-tab active" data-pay="card">💳 Card</button>
+            <button type="button" class="pay-tab" data-pay="crypto">🪙 Crypto</button>
+          </div>
 
-          <div id="pay-crypto">
+          <div id="pay-card">
+            <p class="pay-note">Pay securely by card (Visa &amp; Mastercard). When you place your order, a secure payment window opens for your card details — your card information never touches this site.</p>
+          </div>
+
+          <div id="pay-crypto" hidden>
             <label class="field-label" for="cryptoCoin">Choose your coin</label>
             <select id="cryptoCoin" aria-label="Choose cryptocurrency">
               <option value="BTC">Bitcoin (BTC)</option>
@@ -76,12 +83,14 @@
     <div class="success-ring" data-icon="check"></div>
     <p class="eyebrow">Order received</p>
     <h2>Thank you, beautiful.</h2>
-    <p>Your order <strong id="orderRef"></strong> is in. Once we confirm your crypto payment on-chain,<br />we'll email you and prepare your pair with care.</p>
+    <p>Your order <strong id="orderRef"></strong> is in.</p>
+    <p id="successMsg"></p>
     <a href="shop.html" class="btn btn-primary">Continue Shopping</a>
   </div>
 
   <footer class="site-footer" id="siteFooter"></footer>
 
+  <script src="https://js.paystack.co/v1/inline.js"></script>
   <script src="assets/data.js"></script>
   <script src="assets/main.js"></script>
 </body>
