@@ -389,7 +389,12 @@ function initCheckout() {
   $("#coShipping").textContent = ship === 0 ? "Complimentary" : money(ship);
   $("#coTotal").textContent = money(sub + ship);
   $("#bankRef").textContent = "AS-" + Math.floor(100000 + Math.random() * 900000);
-  $("#walletAddr").textContent = WALLETS.BTC;
+  const showWallet = (coin) => {
+    const w = WALLETS[coin];
+    $("#walletAddr").textContent = w.address;
+    $("#walletNetwork").textContent = w.network;
+  };
+  showWallet("BTC");
 
   $$(".pay-tab").forEach((tab) => {
     tab.addEventListener("click", () => {
@@ -400,9 +405,7 @@ function initCheckout() {
       });
     });
   });
-  $("#cryptoCoin").addEventListener("change", (e) => {
-    $("#walletAddr").textContent = WALLETS[e.target.value];
-  });
+  $("#cryptoCoin").addEventListener("change", (e) => showWallet(e.target.value));
 
   $("#checkoutForm").addEventListener("submit", (e) => {
     e.preventDefault();

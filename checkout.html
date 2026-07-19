@@ -72,12 +72,13 @@
             <select id="cryptoCoin" aria-label="Choose cryptocurrency">
               <option value="BTC">Bitcoin (BTC)</option>
               <option value="ETH">Ethereum (ETH)</option>
-              <option value="USDT">Tether (USDT)</option>
+              <option value="USDT">Tether (USDT · TRC-20)</option>
             </select>
             <div class="bank-box">
-              <p><span>Send to (demo address)</span><strong class="wallet" id="walletAddr"></strong></p>
+              <p><span>Network</span><strong id="walletNetwork"></strong></p>
+              <p><span>Send to</span><strong class="wallet" id="walletAddr"></strong></p>
             </div>
-            <p class="pay-note">Send the equivalent amount. The order confirms after 1 network confirmation.</p>
+            <p class="pay-note">Send the exact crypto equivalent of your total to this address on the <strong>network shown above only</strong> — sending via a different network can permanently lose the funds. Your order confirms after 1 network confirmation.</p>
           </div>
 
           <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1.2rem;">Place Order</button>

@@ -12,12 +12,13 @@ const CURRENCY = "$";
 const FREE_SHIPPING_OVER = 500;
 const SHIPPING_FLAT = 40;
 
-/* Crypto wallet addresses shown at checkout (demo placeholders —
-   replace with your real PUBLIC wallet addresses). */
+/* Crypto wallet addresses shown at checkout — these are Aura Steps'
+   real PUBLIC receiving addresses. Each entry carries the network the
+   customer must send on (sending on the wrong network can lose funds). */
 const WALLETS = {
-  BTC: "bc1q-demo-wallet-address-aurasteps",
-  ETH: "0xDEMO-wallet-address-aurasteps",
-  USDT: "TDemoWalletAddressAuraSteps",
+  BTC:  { address: "156VPJLXzDBB4UcncJFFFXpUtiR8hEqukh",        network: "Bitcoin" },
+  ETH:  { address: "0xd911e4fed6fb4d32f31e100c55a212bb05a1b383", network: "Ethereum (ERC-20)" },
+  USDT: { address: "TTTB4ZUEtcLNz8RdbVD7QKdFzJ7QKHRNuZ",        network: "Tron (TRC-20)" },
 };
 
 const PRODUCTS = [
