@@ -42,9 +42,8 @@ function renderChrome(active) {
   if (header) {
     header.innerHTML = `
     <div class="nav-inner">
-      <a class="brand" href="index.html">
-        <span class="brand-mark">A</span>
-        <span class="brand-name">Aura&nbsp;Steps</span>
+      <a class="brand" href="index.html" aria-label="Aura Steps — home">
+        <img class="brand-logo" src="images/logo.png" alt="Aura Steps" />
       </a>
       <nav class="nav-links" id="navLinks">
         ${[
@@ -78,8 +77,7 @@ function renderChrome(active) {
     footer.innerHTML = `
     <div class="footer-inner">
       <div class="footer-brand">
-        <span class="brand-mark">A</span>
-        <p>Aura Steps</p>
+        <img class="brand-logo footer-logo" src="images/logo.png" alt="Aura Steps" />
         <small>Walk in your own aura.</small>
       </div>
       <div class="footer-col">
