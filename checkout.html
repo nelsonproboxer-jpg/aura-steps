@@ -29,26 +29,31 @@
       <div class="checkout-grid">
         <form class="checkout-form" id="checkoutForm">
           <h3>Delivery details</h3>
-          <p class="ship-note"><strong>Shipping within the United States only</strong> for now — worldwide shipping is coming soon.</p>
+          <p class="ship-note"><strong>We ship to the United States and the United Kingdom.</strong> More countries coming soon.</p>
           <div class="field-row">
             <input type="text" id="coFirst" placeholder="First name" autocomplete="given-name" required />
             <input type="text" id="coLast" placeholder="Last name" autocomplete="family-name" required />
           </div>
           <input type="email" id="coEmail" placeholder="Email address" autocomplete="email" required />
+          <label class="field-label" for="coCountry">Country / region</label>
+          <select id="coCountry" required>
+            <option value="US">United States</option>
+            <option value="GB">United Kingdom</option>
+          </select>
           <div class="addr-field">
-            <input type="text" id="coStreet" placeholder="Start typing your street address…" autocomplete="off" required />
-            <ul class="addr-suggestions" id="addrSuggest" hidden></ul>
+            <input type="text" id="coStreet" placeholder="Street address" autocomplete="off" required />
+            <ul class="addr-suggestions" id="streetSuggest" hidden></ul>
           </div>
-          <input type="text" id="coStreet2" placeholder="Apartment, suite, etc. (optional)" autocomplete="address-line2" />
+          <input type="text" id="coStreet2" placeholder="Apartment, suite, etc. (optional)" autocomplete="off" />
+          <div class="addr-field">
+            <input type="text" id="coCity" placeholder="City" autocomplete="off" required />
+            <ul class="addr-suggestions" id="citySuggest" hidden></ul>
+          </div>
           <div class="field-row">
-            <input type="text" id="coCity" placeholder="City" autocomplete="address-level2" required />
-            <select id="coState" autocomplete="address-level1" required>
+            <select id="coState" required>
               <option value="" disabled selected>State</option>
             </select>
-          </div>
-          <div class="field-row">
-            <input type="text" id="coZip" placeholder="ZIP code" inputmode="numeric" autocomplete="postal-code" maxlength="5" required />
-            <input type="text" id="coCountry" value="United States" readonly aria-label="Country" />
+            <input type="text" id="coZip" placeholder="ZIP code" inputmode="text" autocomplete="off" maxlength="5" required />
           </div>
           <p class="field-msg" id="zipMsg" hidden></p>
 

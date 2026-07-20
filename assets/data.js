@@ -47,6 +47,24 @@ const US_STATES = [
   { c: "WV", n: "West Virginia" }, { c: "WI", n: "Wisconsin" }, { c: "WY", n: "Wyoming" },
 ];
 
+/* UK counties/areas for the checkout dropdown when United Kingdom is chosen
+   (county is optional for UK addresses; unlisted ones auto-add on selection). */
+const UK_COUNTIES = [
+  "Aberdeenshire", "Angus", "Antrim", "Argyll and Bute", "Armagh", "Bedfordshire",
+  "Berkshire", "Bristol", "Buckinghamshire", "Cambridgeshire", "Cardiff", "Carmarthenshire",
+  "Ceredigion", "Cheshire", "Conwy", "Cornwall", "County Durham", "Cumbria", "Denbighshire",
+  "Derbyshire", "Devon", "Dorset", "Down", "Dumfries and Galloway", "Dundee", "East Sussex",
+  "Edinburgh", "Essex", "Fermanagh", "Fife", "Flintshire", "Glasgow", "Gloucestershire",
+  "Greater London", "Greater Manchester", "Gwynedd", "Hampshire", "Herefordshire",
+  "Hertfordshire", "Highland", "Isle of Wight", "Kent", "Lancashire", "Leicestershire",
+  "Lincolnshire", "Londonderry", "Merseyside", "Monmouthshire", "Norfolk", "North Yorkshire",
+  "Northamptonshire", "Northumberland", "Nottinghamshire", "Oxfordshire", "Pembrokeshire",
+  "Perth and Kinross", "Powys", "Rutland", "Scottish Borders", "Shropshire", "Somerset",
+  "South Yorkshire", "Staffordshire", "Stirling", "Suffolk", "Surrey", "Swansea", "Tyne and Wear",
+  "Tyrone", "Warwickshire", "West Midlands", "West Sussex", "West Yorkshire", "Wiltshire",
+  "Worcestershire", "Wrexham",
+].map((n) => ({ c: n, n }));
+
 /* Crypto wallet addresses shown at checkout — these are Aura Steps'
    real PUBLIC receiving addresses. Each entry carries the network the
    customer must send on (sending on the wrong network can lose funds). */

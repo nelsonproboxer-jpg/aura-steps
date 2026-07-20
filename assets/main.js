@@ -399,29 +399,70 @@ function initCheckout() {
   showWallet("BTC");
   $("#cryptoCoin").addEventListener("change", (e) => showWallet(e.target.value));
 
-  // Populate US state dropdown
+  // ---- Adaptive US / UK address form ----
+  const countrySel = $("#coCountry");
   const stateSel = $("#coState");
-  if (stateSel && typeof US_STATES !== "undefined") {
-    US_STATES.forEach((s) => {
-      const o = document.createElement("option");
-      o.value = s.c;
-      o.textContent = s.n;
-      stateSel.appendChild(o);
-    });
-  }
-
-  // ZIP ↔ state validation (free Zippopotam lookup, no key). Confirms the ZIP
-  // exists and matches the chosen state; auto-fills the city.
+  const zipInput = $("#coZip");
   const zipMsg = $("#zipMsg");
+
   function setZipMsg(text, kind) {
     if (!zipMsg) return;
     zipMsg.textContent = text || "";
     zipMsg.className = "field-msg" + (kind ? " " + kind : "");
     zipMsg.hidden = !text;
   }
+
+  function buildStateOptions(cc) {
+    const list = cc === "GB" ? (typeof UK_COUNTIES !== "undefined" ? UK_COUNTIES : []) : US_STATES;
+    const placeholder = cc === "GB" ? "County (optional)" : "State";
+    stateSel.innerHTML =
+      `<option value="" ${cc === "GB" ? "" : "disabled"} selected>${placeholder}</option>` +
+      list.map((s) => `<option value="${escapeHtml(s.c)}">${escapeHtml(s.n)}</option>`).join("");
+    stateSel.required = cc !== "GB";
+  }
+  function applyCountry(cc) {
+    buildStateOptions(cc);
+    zipInput.placeholder = cc === "GB" ? "Postcode" : "ZIP code";
+    zipInput.setAttribute("maxlength", cc === "GB" ? "8" : "5");
+    setZipMsg("", "");
+  }
+  applyCountry(countrySel.value || "US");
+  countrySel.addEventListener("change", () => {
+    applyCountry(countrySel.value);
+    $("#coCity").value = "";
+    zipInput.value = "";
+  });
+
+  // Set the state/county dropdown (adds the value for UK if not already listed)
+  function setStateValue(val) {
+    if (!val) return;
+    const norm = String(val).trim();
+    let opt = [...stateSel.options].find(
+      (o) => o.value.toLowerCase() === norm.toLowerCase() || o.textContent.toLowerCase() === norm.toLowerCase()
+    );
+    if (!opt && countrySel.value === "GB") {
+      opt = document.createElement("option");
+      opt.value = norm;
+      opt.textContent = norm;
+      stateSel.appendChild(opt);
+    }
+    if (opt) stateSel.value = opt.value;
+  }
+
+  // ZIP / postcode validation. US: real ZIP that matches the state
+  // (Zippopotam). UK: valid postcode format.
   async function checkZip() {
-    const zip = ($("#coZip").value || "").trim();
-    const st = $("#coState").value;
+    const cc = countrySel.value;
+    const zip = (zipInput.value || "").trim();
+    if (cc === "GB") {
+      if (!/^[A-Za-z]{1,2}\d[A-Za-z\d]?\s*\d[A-Za-z]{2}$/.test(zip)) {
+        setZipMsg("Enter a valid UK postcode (e.g. SW1A 1AA).", "error");
+        return false;
+      }
+      setZipMsg("", "");
+      return true;
+    }
+    const st = stateSel.value;
     if (!/^\d{5}$/.test(zip)) { setZipMsg("Enter a 5-digit US ZIP code.", "error"); return false; }
     if (!st) { setZipMsg("Please choose your state first.", "error"); return false; }
     try {
@@ -442,67 +483,79 @@ function initCheckout() {
       setZipMsg(city ? `✓ ${city}, ${st}` : "", "ok");
       return true;
     } catch (err) {
-      // Lookup unreachable — don't block a valid-format ZIP on network issues
       setZipMsg("", "");
       return true;
     }
   }
-  $("#coZip").addEventListener("blur", checkZip);
-  $("#coState").addEventListener("change", () => { if ($("#coZip").value.trim()) checkZip(); });
+  zipInput.addEventListener("blur", checkZip);
+  stateSel.addEventListener("change", () => { if (zipInput.value.trim()) checkZip(); });
 
-  // Street-address autocomplete (Geoapify, US-only). Picking a suggestion
-  // auto-fills street, city, state and ZIP.
-  const streetInput = $("#coStreet");
-  const suggestBox = $("#addrSuggest");
-  if (streetInput && suggestBox && typeof GEOAPIFY_KEY !== "undefined" && GEOAPIFY_KEY) {
+  // Reusable Geoapify autocomplete (country-aware) for street + city fields.
+  function attachAutocomplete(inputEl, boxEl, opts) {
+    if (!inputEl || !boxEl || typeof GEOAPIFY_KEY === "undefined" || !GEOAPIFY_KEY) return;
     let debounce, results = [], activeIdx = -1;
-    const closeSuggest = () => { suggestBox.hidden = true; suggestBox.innerHTML = ""; results = []; activeIdx = -1; };
+    const close = () => { boxEl.hidden = true; boxEl.innerHTML = ""; results = []; activeIdx = -1; };
     const render = () => {
-      suggestBox.innerHTML = results
-        .map((r, i) => `<li data-i="${i}" class="${i === activeIdx ? "active" : ""}">${escapeHtml(r.formatted || r.address_line1)}</li>`)
+      boxEl.innerHTML = results
+        .map((r, i) => `<li data-i="${i}" class="${i === activeIdx ? "active" : ""}">${escapeHtml(opts.label(r))}</li>`)
         .join("");
-      suggestBox.hidden = results.length === 0;
+      boxEl.hidden = results.length === 0;
     };
-    const fillFromResult = (r) => {
-      if (!r) return;
-      streetInput.value = r.address_line1 || [r.housenumber, r.street].filter(Boolean).join(" ") || streetInput.value;
-      if (r.city) $("#coCity").value = r.city;
-      if (r.state_code) $("#coState").value = r.state_code.toUpperCase();
-      if (r.postcode) $("#coZip").value = r.postcode;
-      closeSuggest();
-      checkZip();
-    };
-    streetInput.addEventListener("input", () => {
-      const q = streetInput.value.trim();
+    inputEl.addEventListener("input", () => {
+      const q = inputEl.value.trim();
       clearTimeout(debounce);
-      if (q.length < 3) { closeSuggest(); return; }
+      if (q.length < 3) { close(); return; }
       debounce = setTimeout(async () => {
         try {
-          const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(q)}&filter=countrycode:us&format=json&limit=5&apiKey=${GEOAPIFY_KEY}`;
+          const cc = (countrySel.value || "US").toLowerCase();
+          let url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(q)}&filter=countrycode:${cc}&format=json&limit=5&apiKey=${GEOAPIFY_KEY}`;
+          if (opts.type) url += `&type=${opts.type}`;
           const res = await fetch(url);
           if (!res.ok) return;
           const data = await res.json();
-          results = (data.results || []).filter((r) => r.country_code === "us");
+          results = (data.results || []).filter((r) => (r.country_code || "").toLowerCase() === cc);
           activeIdx = -1;
           render();
         } catch (e) { /* ignore network hiccups */ }
       }, 300);
     });
-    suggestBox.addEventListener("mousedown", (e) => {
+    boxEl.addEventListener("mousedown", (e) => {
       const li = e.target.closest("li");
       if (!li) return;
       e.preventDefault();
-      fillFromResult(results[+li.dataset.i]);
+      opts.onSelect(results[+li.dataset.i]);
+      close();
     });
-    streetInput.addEventListener("keydown", (e) => {
-      if (suggestBox.hidden || !results.length) return;
+    inputEl.addEventListener("keydown", (e) => {
+      if (boxEl.hidden || !results.length) return;
       if (e.key === "ArrowDown") { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, results.length - 1); render(); }
       else if (e.key === "ArrowUp") { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); render(); }
-      else if (e.key === "Enter" && activeIdx >= 0) { e.preventDefault(); fillFromResult(results[activeIdx]); }
-      else if (e.key === "Escape") { closeSuggest(); }
+      else if (e.key === "Enter" && activeIdx >= 0) { e.preventDefault(); opts.onSelect(results[activeIdx]); close(); }
+      else if (e.key === "Escape") { close(); }
     });
-    streetInput.addEventListener("blur", () => setTimeout(closeSuggest, 150));
+    inputEl.addEventListener("blur", () => setTimeout(close, 150));
   }
+
+  attachAutocomplete($("#coStreet"), $("#streetSuggest"), {
+    label: (r) => r.formatted || r.address_line1,
+    onSelect: (r) => {
+      if (!r) return;
+      $("#coStreet").value = r.address_line1 || [r.housenumber, r.street].filter(Boolean).join(" ") || $("#coStreet").value;
+      if (r.city) $("#coCity").value = r.city;
+      setStateValue(countrySel.value === "GB" ? (r.county || r.state) : r.state_code);
+      if (r.postcode) zipInput.value = r.postcode;
+      checkZip();
+    },
+  });
+  attachAutocomplete($("#coCity"), $("#citySuggest"), {
+    type: "city",
+    label: (r) => r.formatted || [r.city, r.state, r.postcode].filter(Boolean).join(", "),
+    onSelect: (r) => {
+      if (!r) return;
+      if (r.city) $("#coCity").value = r.city;
+      setStateValue(countrySel.value === "GB" ? (r.county || r.state) : r.state_code);
+    },
+  });
 
   const form = $("#checkoutForm");
   form.addEventListener("submit", async (e) => {
@@ -517,9 +570,9 @@ function initCheckout() {
       address: $("#coStreet").value.trim(),
       address2: $("#coStreet2").value.trim(),
       city: $("#coCity").value.trim(),
-      state: $("#coState").value,
-      postal: $("#coZip").value.trim(),
-      country: "United States",
+      state: stateSel.value,
+      postal: zipInput.value.trim(),
+      country: countrySel.value === "GB" ? "United Kingdom" : "United States",
     };
     const ref = "AS-" + Math.floor(100000 + Math.random() * 900000);
     const coin = $("#cryptoCoin").value;
