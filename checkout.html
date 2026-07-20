@@ -29,17 +29,25 @@
       <div class="checkout-grid">
         <form class="checkout-form" id="checkoutForm">
           <h3>Delivery details</h3>
+          <p class="ship-note"><strong>Shipping within the United States only</strong> for now — worldwide shipping is coming soon.</p>
           <div class="field-row">
-            <input type="text" placeholder="First name" autocomplete="given-name" required />
-            <input type="text" placeholder="Last name" autocomplete="family-name" required />
+            <input type="text" id="coFirst" placeholder="First name" autocomplete="given-name" required />
+            <input type="text" id="coLast" placeholder="Last name" autocomplete="family-name" required />
           </div>
-          <input type="email" placeholder="Email address" autocomplete="email" required />
-          <input type="text" placeholder="Street address" autocomplete="street-address" required />
+          <input type="email" id="coEmail" placeholder="Email address" autocomplete="email" required />
+          <input type="text" id="coStreet" placeholder="Street address" autocomplete="street-address" required />
+          <input type="text" id="coStreet2" placeholder="Apartment, suite, etc. (optional)" autocomplete="address-line2" />
           <div class="field-row">
-            <input type="text" placeholder="City" autocomplete="address-level2" required />
-            <input type="text" placeholder="Postal code" autocomplete="postal-code" />
+            <input type="text" id="coCity" placeholder="City" autocomplete="address-level2" required />
+            <select id="coState" autocomplete="address-level1" required>
+              <option value="" disabled selected>State</option>
+            </select>
           </div>
-          <input type="text" placeholder="Country" autocomplete="country-name" required />
+          <div class="field-row">
+            <input type="text" id="coZip" placeholder="ZIP code" inputmode="numeric" autocomplete="postal-code" maxlength="5" required />
+            <input type="text" id="coCountry" value="United States" readonly aria-label="Country" />
+          </div>
+          <p class="field-msg" id="zipMsg" hidden></p>
 
           <h3>Payment method</h3>
           <div id="pay-crypto">

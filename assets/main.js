@@ -396,19 +396,73 @@ function initCheckout() {
   showWallet("BTC");
   $("#cryptoCoin").addEventListener("change", (e) => showWallet(e.target.value));
 
+  // Populate US state dropdown
+  const stateSel = $("#coState");
+  if (stateSel && typeof US_STATES !== "undefined") {
+    US_STATES.forEach((s) => {
+      const o = document.createElement("option");
+      o.value = s.c;
+      o.textContent = s.n;
+      stateSel.appendChild(o);
+    });
+  }
+
+  // ZIP ↔ state validation (free Zippopotam lookup, no key). Confirms the ZIP
+  // exists and matches the chosen state; auto-fills the city.
+  const zipMsg = $("#zipMsg");
+  function setZipMsg(text, kind) {
+    if (!zipMsg) return;
+    zipMsg.textContent = text || "";
+    zipMsg.className = "field-msg" + (kind ? " " + kind : "");
+    zipMsg.hidden = !text;
+  }
+  async function checkZip() {
+    const zip = ($("#coZip").value || "").trim();
+    const st = $("#coState").value;
+    if (!/^\d{5}$/.test(zip)) { setZipMsg("Enter a 5-digit US ZIP code.", "error"); return false; }
+    if (!st) { setZipMsg("Please choose your state first.", "error"); return false; }
+    try {
+      const res = await fetch("https://api.zippopotam.us/us/" + zip);
+      if (res.status === 404) { setZipMsg("That ZIP code doesn't exist — please check it.", "error"); return false; }
+      if (!res.ok) throw new Error("lookup unavailable");
+      const data = await res.json();
+      const place = (data.places && data.places[0]) || {};
+      const zipState = place["state abbreviation"];
+      const city = place["place name"];
+      if (zipState && zipState !== st) {
+        const full = (US_STATES.find((s) => s.c === zipState) || {}).n || zipState;
+        setZipMsg(`ZIP ${zip} is in ${full}, not the state you selected.`, "error");
+        return false;
+      }
+      const cityInput = $("#coCity");
+      if (cityInput && !cityInput.value.trim() && city) cityInput.value = city;
+      setZipMsg(city ? `✓ ${city}, ${st}` : "", "ok");
+      return true;
+    } catch (err) {
+      // Lookup unreachable — don't block a valid-format ZIP on network issues
+      setZipMsg("", "");
+      return true;
+    }
+  }
+  $("#coZip").addEventListener("blur", checkZip);
+  $("#coState").addEventListener("change", () => { if ($("#coZip").value.trim()) checkZip(); });
+
   const form = $("#checkoutForm");
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!form.reportValidity()) return;
-    const inputs = $$("input", form);
+    const ok = await checkZip();
+    if (!ok) { $("#coZip").focus(); return; }
     const shipping = {
-      firstName: inputs[0].value.trim(),
-      lastName: inputs[1].value.trim(),
-      email: inputs[2].value.trim(),
-      address: inputs[3].value.trim(),
-      city: inputs[4].value.trim(),
-      postal: inputs[5].value.trim(),
-      country: inputs[6].value.trim(),
+      firstName: $("#coFirst").value.trim(),
+      lastName: $("#coLast").value.trim(),
+      email: $("#coEmail").value.trim(),
+      address: $("#coStreet").value.trim(),
+      address2: $("#coStreet2").value.trim(),
+      city: $("#coCity").value.trim(),
+      state: $("#coState").value,
+      postal: $("#coZip").value.trim(),
+      country: "United States",
     };
     const ref = "AS-" + Math.floor(100000 + Math.random() * 900000);
     const coin = $("#cryptoCoin").value;
@@ -449,7 +503,7 @@ function sendOrderEmail({ ref, total, cart, shipping, method }) {
     Items: items,
     Customer: `${shipping.firstName} ${shipping.lastName}`,
     Email: shipping.email,
-    Ship_to: `${shipping.address}, ${shipping.city} ${shipping.postal}, ${shipping.country}`,
+    Ship_to: `${shipping.address}${shipping.address2 ? ", " + shipping.address2 : ""}, ${shipping.city}, ${shipping.state} ${shipping.postal}, ${shipping.country}`,
   };
   fetch("https://formsubmit.co/ajax/" + encodeURIComponent(ORDER_EMAIL), {
     method: "POST",

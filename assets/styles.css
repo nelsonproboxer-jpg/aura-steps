@@ -485,6 +485,11 @@ img { max-width: 100%; }
 .success-card p { color: hsl(var(--muted-foreground)); margin-bottom: 1.8rem; }
 
 .pay-lead { font-size: 0.9rem; color: hsl(var(--muted-foreground)); margin-bottom: 1rem; }
+.ship-note { background: hsl(var(--primary) / 0.1); color: hsl(var(--foreground)); border-radius: var(--radius-lg); padding: 0.7rem 1rem; font-size: 0.85rem; margin-bottom: 1rem; }
+.field-msg { font-size: 0.8rem; margin: -0.3rem 0 0.7rem; }
+.field-msg.error { color: hsl(var(--destructive)); }
+.field-msg.ok { color: hsl(150 45% 40%); }
+#coCountry[readonly] { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); cursor: not-allowed; }
 
 /* ---------- Contact page ---------- */
 .contact-grid { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 2.4rem; align-items: start; }

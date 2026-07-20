@@ -25,6 +25,23 @@ const SUPPORT_EMAIL = "support@aurastepsusa.com";
 const SUPPORT_PHONE = "+1 (213) 357-0150";
 const SUPPORT_ADDRESS = "85 Washington St, Delaware City, DE 19706";
 
+/* US states for the checkout address dropdown (shipping is US-only for now). */
+const US_STATES = [
+  { c: "AL", n: "Alabama" }, { c: "AK", n: "Alaska" }, { c: "AZ", n: "Arizona" }, { c: "AR", n: "Arkansas" },
+  { c: "CA", n: "California" }, { c: "CO", n: "Colorado" }, { c: "CT", n: "Connecticut" }, { c: "DE", n: "Delaware" },
+  { c: "DC", n: "District of Columbia" }, { c: "FL", n: "Florida" }, { c: "GA", n: "Georgia" }, { c: "HI", n: "Hawaii" },
+  { c: "ID", n: "Idaho" }, { c: "IL", n: "Illinois" }, { c: "IN", n: "Indiana" }, { c: "IA", n: "Iowa" },
+  { c: "KS", n: "Kansas" }, { c: "KY", n: "Kentucky" }, { c: "LA", n: "Louisiana" }, { c: "ME", n: "Maine" },
+  { c: "MD", n: "Maryland" }, { c: "MA", n: "Massachusetts" }, { c: "MI", n: "Michigan" }, { c: "MN", n: "Minnesota" },
+  { c: "MS", n: "Mississippi" }, { c: "MO", n: "Missouri" }, { c: "MT", n: "Montana" }, { c: "NE", n: "Nebraska" },
+  { c: "NV", n: "Nevada" }, { c: "NH", n: "New Hampshire" }, { c: "NJ", n: "New Jersey" }, { c: "NM", n: "New Mexico" },
+  { c: "NY", n: "New York" }, { c: "NC", n: "North Carolina" }, { c: "ND", n: "North Dakota" }, { c: "OH", n: "Ohio" },
+  { c: "OK", n: "Oklahoma" }, { c: "OR", n: "Oregon" }, { c: "PA", n: "Pennsylvania" }, { c: "RI", n: "Rhode Island" },
+  { c: "SC", n: "South Carolina" }, { c: "SD", n: "South Dakota" }, { c: "TN", n: "Tennessee" }, { c: "TX", n: "Texas" },
+  { c: "UT", n: "Utah" }, { c: "VT", n: "Vermont" }, { c: "VA", n: "Virginia" }, { c: "WA", n: "Washington" },
+  { c: "WV", n: "West Virginia" }, { c: "WI", n: "Wisconsin" }, { c: "WY", n: "Wyoming" },
+];
+
 /* Crypto wallet addresses shown at checkout — these are Aura Steps'
    real PUBLIC receiving addresses. Each entry carries the network the
    customer must send on (sending on the wrong network can lose funds). */
