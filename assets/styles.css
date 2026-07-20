@@ -490,6 +490,18 @@ img { max-width: 100%; }
 .field-msg.error { color: hsl(var(--destructive)); }
 .field-msg.ok { color: hsl(150 45% 40%); }
 #coCountry[readonly] { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); cursor: not-allowed; }
+.addr-field { position: relative; }
+.addr-suggestions {
+  position: absolute; top: calc(100% - 0.5rem); left: 0; right: 0; z-index: 30;
+  background: hsl(var(--card)); border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  list-style: none; margin: 0; padding: 0.3rem; max-height: 260px; overflow-y: auto;
+}
+.addr-suggestions li {
+  padding: 0.6rem 0.75rem; border-radius: var(--radius); cursor: pointer;
+  font-size: 0.88rem; color: hsl(var(--foreground)); line-height: 1.35;
+}
+.addr-suggestions li:hover, .addr-suggestions li.active { background: hsl(var(--accent)); }
 
 /* ---------- Contact page ---------- */
 .contact-grid { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 2.4rem; align-items: start; }

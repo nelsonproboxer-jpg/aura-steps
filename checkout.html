@@ -35,7 +35,10 @@
             <input type="text" id="coLast" placeholder="Last name" autocomplete="family-name" required />
           </div>
           <input type="email" id="coEmail" placeholder="Email address" autocomplete="email" required />
-          <input type="text" id="coStreet" placeholder="Street address" autocomplete="street-address" required />
+          <div class="addr-field">
+            <input type="text" id="coStreet" placeholder="Start typing your street address…" autocomplete="off" required />
+            <ul class="addr-suggestions" id="addrSuggest" hidden></ul>
+          </div>
           <input type="text" id="coStreet2" placeholder="Apartment, suite, etc. (optional)" autocomplete="address-line2" />
           <div class="field-row">
             <input type="text" id="coCity" placeholder="City" autocomplete="address-level2" required />

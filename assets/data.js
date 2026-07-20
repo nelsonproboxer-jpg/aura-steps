@@ -25,6 +25,11 @@ const SUPPORT_EMAIL = "support@aurastepsusa.com";
 const SUPPORT_PHONE = "+1 (213) 357-0150";
 const SUPPORT_ADDRESS = "85 Washington St, Delaware City, DE 19706";
 
+/* Geoapify API key powers the street-address autocomplete at checkout (free
+   tier). This is a client-side key — safe to expose — but restrict it to your
+   domain in the Geoapify dashboard (Allowed origins → aurastepsusa.com). */
+const GEOAPIFY_KEY = "f15f99b87dc24e14b916620b18d972b0";
+
 /* US states for the checkout address dropdown (shipping is US-only for now). */
 const US_STATES = [
   { c: "AL", n: "Alabama" }, { c: "AK", n: "Alaska" }, { c: "AZ", n: "Arizona" }, { c: "AR", n: "Arkansas" },

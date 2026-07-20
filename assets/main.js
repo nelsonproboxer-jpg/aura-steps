@@ -5,6 +5,9 @@
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const money = (n) => CURRENCY + n.toLocaleString("en-US");
+const escapeHtml = (s) =>
+  String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const productById = (id) => PRODUCTS.find((p) => p.id === id);
 const productImage = (p, eager = false) =>
   `<img src="${p.image}" alt="${p.name} — ${p.style}" ${eager ? "" : 'loading="lazy"'} />`;
@@ -446,6 +449,60 @@ function initCheckout() {
   }
   $("#coZip").addEventListener("blur", checkZip);
   $("#coState").addEventListener("change", () => { if ($("#coZip").value.trim()) checkZip(); });
+
+  // Street-address autocomplete (Geoapify, US-only). Picking a suggestion
+  // auto-fills street, city, state and ZIP.
+  const streetInput = $("#coStreet");
+  const suggestBox = $("#addrSuggest");
+  if (streetInput && suggestBox && typeof GEOAPIFY_KEY !== "undefined" && GEOAPIFY_KEY) {
+    let debounce, results = [], activeIdx = -1;
+    const closeSuggest = () => { suggestBox.hidden = true; suggestBox.innerHTML = ""; results = []; activeIdx = -1; };
+    const render = () => {
+      suggestBox.innerHTML = results
+        .map((r, i) => `<li data-i="${i}" class="${i === activeIdx ? "active" : ""}">${escapeHtml(r.formatted || r.address_line1)}</li>`)
+        .join("");
+      suggestBox.hidden = results.length === 0;
+    };
+    const fillFromResult = (r) => {
+      if (!r) return;
+      streetInput.value = r.address_line1 || [r.housenumber, r.street].filter(Boolean).join(" ") || streetInput.value;
+      if (r.city) $("#coCity").value = r.city;
+      if (r.state_code) $("#coState").value = r.state_code.toUpperCase();
+      if (r.postcode) $("#coZip").value = r.postcode;
+      closeSuggest();
+      checkZip();
+    };
+    streetInput.addEventListener("input", () => {
+      const q = streetInput.value.trim();
+      clearTimeout(debounce);
+      if (q.length < 3) { closeSuggest(); return; }
+      debounce = setTimeout(async () => {
+        try {
+          const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(q)}&filter=countrycode:us&format=json&limit=5&apiKey=${GEOAPIFY_KEY}`;
+          const res = await fetch(url);
+          if (!res.ok) return;
+          const data = await res.json();
+          results = (data.results || []).filter((r) => r.country_code === "us");
+          activeIdx = -1;
+          render();
+        } catch (e) { /* ignore network hiccups */ }
+      }, 300);
+    });
+    suggestBox.addEventListener("mousedown", (e) => {
+      const li = e.target.closest("li");
+      if (!li) return;
+      e.preventDefault();
+      fillFromResult(results[+li.dataset.i]);
+    });
+    streetInput.addEventListener("keydown", (e) => {
+      if (suggestBox.hidden || !results.length) return;
+      if (e.key === "ArrowDown") { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, results.length - 1); render(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); render(); }
+      else if (e.key === "Enter" && activeIdx >= 0) { e.preventDefault(); fillFromResult(results[activeIdx]); }
+      else if (e.key === "Escape") { closeSuggest(); }
+    });
+    streetInput.addEventListener("blur", () => setTimeout(closeSuggest, 150));
+  }
 
   const form = $("#checkoutForm");
   form.addEventListener("submit", async (e) => {
