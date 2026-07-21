@@ -16,6 +16,12 @@ const CURRENCIES = {
   GBP: { symbol: "£", locale: "en-GB" },
 };
 const FX_FALLBACK = { USD: 1, GBP: 0.74 };
+
+/* ---- Card payments (Flutterwave) ----
+   A FLWPUBK_TEST-… key runs in TEST MODE: only Flutterwave test cards work.
+   Swap in your live key (FLWPUBK-…) once your Flutterwave account is
+   activated. Charges in the currency the shopper is viewing (USD/GBP). */
+const FLUTTERWAVE_PUBLIC_KEY = "FLWPUBK_TEST-2eeff86395fcbdc8ea49b11e07087c68-X";
 const FREE_SHIPPING_OVER = 500;
 const SHIPPING_FLAT = 40;
 

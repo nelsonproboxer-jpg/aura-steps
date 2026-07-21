@@ -612,6 +612,18 @@ function initCheckout() {
     },
   });
 
+  // Payment-method tabs (Card via Flutterwave, or Crypto)
+  let method = "card";
+  $$(".pay-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      $$(".pay-tab").forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+      method = tab.dataset.pay;
+      $("#pay-card").hidden = method !== "card";
+      $("#pay-crypto").hidden = method !== "crypto";
+    });
+  });
+
   const form = $("#checkoutForm");
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -630,8 +642,44 @@ function initCheckout() {
       country: countrySel.value === "GB" ? "United Kingdom" : "United States",
     };
     const ref = "AS-" + Math.floor(100000 + Math.random() * 900000);
-    const coin = $("#cryptoCoin").value;
-    finalizeOrder({ ref, total, cart, shipping, method: `Crypto — ${coin} (${WALLETS[coin].network})` });
+    if (method === "card") {
+      payWithCard({ ref, total, cart, shipping });
+    } else {
+      const coin = $("#cryptoCoin").value;
+      finalizeOrder({ ref, total, cart, shipping, method: `Crypto — ${coin} (${WALLETS[coin].network})` });
+    }
+  });
+}
+
+function payWithCard({ ref, total, cart, shipping }) {
+  if (typeof FlutterwaveCheckout === "undefined") {
+    toast("Card payment couldn't load — please try crypto, or refresh the page.");
+    return;
+  }
+  const cur = getCurrency();
+  const amount = cur === "GBP" ? Math.round(total * (FX.GBP || 0.74)) : Math.round(total);
+  FlutterwaveCheckout({
+    public_key: FLUTTERWAVE_PUBLIC_KEY,
+    tx_ref: ref,
+    amount: amount,
+    currency: cur,
+    payment_options: "card",
+    customer: { email: shipping.email, name: `${shipping.firstName} ${shipping.lastName}` },
+    customizations: {
+      title: "Aura Steps",
+      description: "Order " + ref,
+      logo: location.origin + "/images/logo.png",
+    },
+    meta: {
+      items: cart.map((i) => { const p = productById(i.id); return `${p.name} US ${i.size} x${i.qty}`; }).join(", "),
+      ship_to: `${shipping.address}, ${shipping.city}, ${shipping.state} ${shipping.postal}, ${shipping.country}`,
+    },
+    callback: function (data) {
+      if (data && (data.status === "successful" || data.status === "completed")) {
+        finalizeOrder({ ref, total, cart, shipping, method: `Card (Flutterwave · ${cur})` });
+      }
+    },
+    onclose: function () { /* customer closed the window without paying */ },
   });
 }
 
