@@ -3,12 +3,19 @@
    ------------------------------------------------------------
    TO EDIT PRODUCTS: change the PRODUCTS array below.
    - image: a transparent (frameless) PNG in the images/ folder.
-   - Prices are plain numbers; currency symbol is CURRENCY.
+   - Prices are plain numbers in USD (the base). Shoppers switch the
+     displayed currency (USD/GBP) from the header toggle.
    - featured: true puts the piece in the home "Featured" row.
    - isNew: true puts the piece in the home "New Arrivals" row.
    ============================================================ */
 
-const CURRENCY = "$";
+/* Displayed-currency options. Product prices above are authored in USD; the
+   live USD→GBP rate is fetched daily, with this fallback if it's unreachable. */
+const CURRENCIES = {
+  USD: { symbol: "$", locale: "en-US" },
+  GBP: { symbol: "£", locale: "en-GB" },
+};
+const FX_FALLBACK = { USD: 1, GBP: 0.74 };
 const FREE_SHIPPING_OVER = 500;
 const SHIPPING_FLAT = 40;
 

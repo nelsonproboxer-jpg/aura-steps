@@ -4,7 +4,47 @@
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
-const money = (n) => CURRENCY + n.toLocaleString("en-US");
+/* ---------- Currency (prices are authored in USD) ---------- */
+let FX = { USD: 1, GBP: (typeof FX_FALLBACK !== "undefined" ? FX_FALLBACK.GBP : 0.74) };
+/* Hydrate the cached rate synchronously so the very first render already
+   uses the real rate (avoids prices flashing/differing between pages). */
+try {
+  const _fx = JSON.parse(localStorage.getItem("aura-fx") || "null");
+  if (_fx && _fx.gbp) FX.GBP = _fx.gbp;
+} catch (e) { /* ignore */ }
+
+function getCurrency() {
+  const c = localStorage.getItem("aura-currency");
+  return c && typeof CURRENCIES !== "undefined" && CURRENCIES[c] ? c : "USD";
+}
+function money(usd) {
+  const code = getCurrency();
+  const cfg = (typeof CURRENCIES !== "undefined" && CURRENCIES[code]) || { symbol: "$", locale: "en-US" };
+  return cfg.symbol + Math.round(Number(usd) * (FX[code] || 1)).toLocaleString(cfg.locale);
+}
+/* Tag an element with its USD value so it can be re-formatted on switch */
+function setPrice(el, usd) {
+  if (!el) return;
+  el.dataset.usd = usd;
+  el.textContent = money(usd);
+}
+function refreshPrices() {
+  $$("[data-usd]").forEach((el) => { el.textContent = money(parseFloat(el.dataset.usd)); });
+}
+async function loadFx() {
+  try {
+    const cached = JSON.parse(localStorage.getItem("aura-fx") || "null");
+    if (cached && cached.gbp && Date.now() - cached.t < 12 * 3600 * 1000) { FX.GBP = cached.gbp; return; }
+    const res = await fetch("https://open.er-api.com/v6/latest/USD");
+    if (!res.ok) return;
+    const d = await res.json();
+    if (d && d.rates && d.rates.GBP) {
+      FX.GBP = d.rates.GBP;
+      localStorage.setItem("aura-fx", JSON.stringify({ t: Date.now(), gbp: FX.GBP }));
+      refreshPrices();
+    }
+  } catch (e) { /* keep the fallback rate */ }
+}
 const escapeHtml = (s) =>
   String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -60,6 +100,7 @@ function renderChrome(active) {
         ).join("")}
       </nav>
       <div class="nav-actions">
+        <button class="icon-btn currency-btn" id="currencyToggle" aria-label="Switch currency" title="Switch currency"></button>
         <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode"></button>
         <a class="icon-btn bag-btn" href="cart.html" aria-label="Shopping bag">
           ${ICONS.bag}<span class="cart-count" id="cartCount">0</span>
@@ -67,6 +108,16 @@ function renderChrome(active) {
         <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu">${ICONS.menu}</button>
       </div>
     </div>`;
+    const curBtn = $("#currencyToggle");
+    if (curBtn) {
+      const paintCur = () => { curBtn.textContent = getCurrency(); };
+      paintCur();
+      curBtn.addEventListener("click", () => {
+        localStorage.setItem("aura-currency", getCurrency() === "USD" ? "GBP" : "USD");
+        paintCur();
+        refreshPrices();
+      });
+    }
     const isDark = document.documentElement.classList.contains("dark");
     $("#themeToggle").innerHTML = isDark ? ICONS.sun : ICONS.moon;
     $("#themeToggle").addEventListener("click", () => {
@@ -174,7 +225,7 @@ function productCardHTML(p) {
     <div class="product-card-body">
       <p class="product-style">${p.style}</p>
       <h3>${p.name}</h3>
-      <p class="product-price">${money(p.price)}</p>
+      <p class="product-price" data-usd="${p.price}">${money(p.price)}</p>
     </div>
   </a>`;
 }
@@ -277,7 +328,7 @@ function initProduct() {
   $("#pdCategory").textContent = p.category;
   $("#pdName").textContent = p.name;
   $("#pdStyle").textContent = p.style;
-  $("#pdPrice").textContent = money(p.price);
+  setPrice($("#pdPrice"), p.price);
   $("#pdDesc").textContent = p.description;
   $("#pdChartWrap").innerHTML = sizeTableHTML(true);
 
@@ -345,7 +396,7 @@ function initCart() {
               <span>${item.qty}</span>
               <button data-act="inc" aria-label="Increase">+</button>
             </div>
-            <span class="cart-item-price">${money(p.price * item.qty)}</span>
+            <span class="cart-item-price" data-usd="${p.price * item.qty}">${money(p.price * item.qty)}</span>
           </div>
           <button class="cart-item-remove" data-act="remove">Remove</button>
         </div>`;
@@ -364,9 +415,11 @@ function initCart() {
     });
     const sub = cartSubtotal(cart);
     const ship = sub >= FREE_SHIPPING_OVER ? 0 : SHIPPING_FLAT;
-    $("#sumSubtotal").textContent = money(sub);
-    $("#sumShipping").textContent = ship === 0 ? "Complimentary" : money(ship);
-    $("#sumTotal").textContent = money(sub + ship);
+    setPrice($("#sumSubtotal"), sub);
+    const shipEl = $("#sumShipping");
+    if (ship === 0) { delete shipEl.dataset.usd; shipEl.textContent = "Complimentary"; }
+    else setPrice(shipEl, ship);
+    setPrice($("#sumTotal"), sub + ship);
   }
   render();
 }
@@ -384,11 +437,13 @@ function initCheckout() {
   const ship = sub >= FREE_SHIPPING_OVER ? 0 : SHIPPING_FLAT;
   $("#coItems").innerHTML = cart.map((i) => {
     const p = productById(i.id);
-    return `<div class="summary-item"><span>${p.name} · US ${i.size} × ${i.qty}</span><span>${money(p.price * i.qty)}</span></div>`;
+    return `<div class="summary-item"><span>${p.name} · US ${i.size} × ${i.qty}</span><span data-usd="${p.price * i.qty}">${money(p.price * i.qty)}</span></div>`;
   }).join("");
-  $("#coSubtotal").textContent = money(sub);
-  $("#coShipping").textContent = ship === 0 ? "Complimentary" : money(ship);
-  $("#coTotal").textContent = money(sub + ship);
+  setPrice($("#coSubtotal"), sub);
+  const coShipEl = $("#coShipping");
+  if (ship === 0) { delete coShipEl.dataset.usd; coShipEl.textContent = "Complimentary"; }
+  else setPrice(coShipEl, ship);
+  setPrice($("#coTotal"), sub + ship);
   const total = sub + ship;
 
   const showWallet = (coin) => {
@@ -602,13 +657,16 @@ function sendOrderEmail({ ref, total, cart, shipping, method }) {
   if (typeof ORDER_EMAIL === "undefined" || !ORDER_EMAIL) return;
   const items = cart.map((i) => {
     const p = productById(i.id);
-    return `• ${p.name} — ${p.style} (US ${i.size}) ×${i.qty} — ${money(p.price * i.qty)}`;
+    return `• ${p.name} — ${p.style} (US ${i.size}) ×${i.qty} — $${(p.price * i.qty).toLocaleString("en-US")}`;
   }).join("\n");
+  const cur = getCurrency();
+  const usdTotal = "$" + Math.round(total).toLocaleString("en-US");
   const payload = {
-    _subject: `New Aura Steps order ${ref} — ${money(total)}`,
+    _subject: `New Aura Steps order ${ref} — ${usdTotal}`,
     _template: "table",
     Order: ref,
-    Total: money(total),
+    Total_USD: usdTotal,
+    Customer_saw: cur === "USD" ? usdTotal : `${money(total)} (${cur})`,
     Paid_with: method,
     Items: items,
     Customer: `${shipping.firstName} ${shipping.lastName}`,
@@ -678,6 +736,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   if (inits[page]) inits[page]();
   initReveals();
+
+  // apply the saved currency to any prices, then refresh the FX rate
+  refreshPrices();
+  loadFx();
 
   // inject shared icons referenced by data-icon
   $$("[data-icon]").forEach((el) => { el.innerHTML = ICONS[el.dataset.icon] || ""; });
