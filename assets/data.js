@@ -17,11 +17,11 @@ const CURRENCIES = {
 };
 const FX_FALLBACK = { USD: 1, GBP: 0.74 };
 
-/* ---- Card payments (Flutterwave) ----
-   A FLWPUBK_TEST-… key runs in TEST MODE: only Flutterwave test cards work.
-   Swap in your live key (FLWPUBK-…) once your Flutterwave account is
-   activated. Charges in the currency the shopper is viewing (USD/GBP). */
-const FLUTTERWAVE_PUBLIC_KEY = "FLWPUBK_TEST-2eeff86395fcbdc8ea49b11e07087c68-X";
+/* ---- Card payments (Flutterwave) — LIVE ----
+   This is the LIVE key: real cards are charged real money and settle to the
+   Flutterwave account. Charges in the currency the shopper is viewing
+   (USD/GBP). (Previous test key was FLWPUBK_TEST-2eeff863…) */
+const FLUTTERWAVE_PUBLIC_KEY = "FLWPUBK-517210b9026b079da04ef24fc3c3ba29-X";
 const FREE_SHIPPING_OVER = 500;
 const SHIPPING_FLAT = 40;
 
