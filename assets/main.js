@@ -709,16 +709,32 @@ function sendOrderEmail({ ref, total, cart, shipping, method }) {
   }).join("\n");
   const cur = getCurrency();
   const usdTotal = "$" + Math.round(total).toLocaleString("en-US");
+  const shownTotal = cur === "USD" ? usdTotal : `${money(total)} (${cur})`;
+  const shipBlock =
+    `${shipping.firstName} ${shipping.lastName}\n` +
+    `${shipping.address}${shipping.address2 ? ", " + shipping.address2 : ""}\n` +
+    `${shipping.city}, ${shipping.state} ${shipping.postal}\n${shipping.country}`;
+  // Confirmation the customer receives (FormSubmit auto-response to their email)
+  const autoresponse =
+    `Hi ${shipping.firstName || "there"},\n\n` +
+    `Thank you for your order with Aura Steps — we've received it and it's being prepared with care.\n\n` +
+    `Order number: ${ref}\n` +
+    `Total: ${shownTotal}\n\n` +
+    `Your items:\n${items}\n\n` +
+    `Shipping to:\n${shipBlock}\n\n` +
+    `We'll be in touch as your order moves along. Questions? Just reply to this email or write to support@aurastepsusa.com.\n\n` +
+    `Walk in your own aura,\nAura Steps\nhttps://aurastepsusa.com`;
   const payload = {
     _subject: `New Aura Steps order ${ref} — ${usdTotal}`,
     _template: "table",
+    _autoresponse: autoresponse,
     Order: ref,
     Total_USD: usdTotal,
-    Customer_saw: cur === "USD" ? usdTotal : `${money(total)} (${cur})`,
+    Customer_saw: shownTotal,
     Paid_with: method,
     Items: items,
     Customer: `${shipping.firstName} ${shipping.lastName}`,
-    Email: shipping.email,
+    email: shipping.email,
     Ship_to: `${shipping.address}${shipping.address2 ? ", " + shipping.address2 : ""}, ${shipping.city}, ${shipping.state} ${shipping.postal}, ${shipping.country}`,
   };
   fetch("https://formsubmit.co/ajax/" + encodeURIComponent(ORDER_EMAIL), {
