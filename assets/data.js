@@ -21,7 +21,7 @@ const FX_FALLBACK = { USD: 1, GBP: 0.74 };
    This is the LIVE key: real cards are charged real money and settle to the
    Flutterwave account. Charges in the currency the shopper is viewing
    (USD/GBP). (Previous test key was FLWPUBK_TEST-2eeff863…) */
-const FLUTTERWAVE_PUBLIC_KEY = "FLWPUBK-517210b9026b079da04ef24fc3c3ba29-X";
+const FLUTTERWAVE_PUBLIC_KEY = "FLWPUBK-c629ffdc45e14a2355aa2b2494ad97c3-X";
 const FREE_SHIPPING_OVER = 500;
 const SHIPPING_FLAT = 40;
 
