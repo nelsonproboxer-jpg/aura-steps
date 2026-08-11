@@ -651,9 +651,30 @@ function initCheckout() {
   });
 }
 
-function payWithCard({ ref, total, cart, shipping }) {
-  if (typeof FlutterwaveCheckout === "undefined") {
-    toast("Card payment couldn't load — please try crypto, or refresh the page.");
+// Ensure the Flutterwave library is available (load it on demand + wait a bit,
+// so a slow initial load doesn't break the Card button).
+function ensureFlutterwave() {
+  return new Promise((resolve, reject) => {
+    if (typeof FlutterwaveCheckout !== "undefined") return resolve();
+    if (!document.querySelector('script[src*="checkout.flutterwave.com"]')) {
+      const s = document.createElement("script");
+      s.src = "https://checkout.flutterwave.com/v3.js";
+      document.head.appendChild(s);
+    }
+    const started = Date.now();
+    (function poll() {
+      if (typeof FlutterwaveCheckout !== "undefined") return resolve();
+      if (Date.now() - started > 9000) return reject(new Error("unavailable"));
+      setTimeout(poll, 200);
+    })();
+  });
+}
+
+async function payWithCard({ ref, total, cart, shipping }) {
+  try {
+    await ensureFlutterwave();
+  } catch (e) {
+    toast("Card window blocked — turn off any ad-blocker or VPN, use a normal browser (Safari/Chrome), or pay with crypto.");
     return;
   }
   const cur = getCurrency();
