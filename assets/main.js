@@ -723,7 +723,6 @@ function finalizeOrder({ ref, total, cart, shipping, method }) {
 }
 
 function sendOrderEmail({ ref, total, cart, shipping, method }) {
-  if (typeof ORDER_EMAIL === "undefined" || !ORDER_EMAIL) return;
   const items = cart.map((i) => {
     const p = productById(i.id);
     return `• ${p.name} — ${p.style} (US ${i.size}) ×${i.qty} — $${(p.price * i.qty).toLocaleString("en-US")}`;
@@ -735,7 +734,15 @@ function sendOrderEmail({ ref, total, cart, shipping, method }) {
     `${shipping.firstName} ${shipping.lastName}\n` +
     `${shipping.address}${shipping.address2 ? ", " + shipping.address2 : ""}\n` +
     `${shipping.city}, ${shipping.state} ${shipping.postal}\n${shipping.country}`;
-  // Confirmation the customer receives (FormSubmit auto-response to their email)
+
+  // 1) Branded confirmation email to the customer, sent from support@aurastepsusa.com
+  //    via our Cloudflare Worker + Resend. Returns a promise -> true when accepted.
+  const branded = sendBrandedEmail({ ref, total, cart, shipping });
+
+  // 2) Merchant order record via FormSubmit (structured table for fulfilment).
+  //    The plain-text customer confirmation is attached ONLY as a fallback — if the
+  //    branded email went out, we skip it so the customer never gets two emails.
+  if (typeof ORDER_EMAIL === "undefined" || !ORDER_EMAIL) return;
   const autoresponse =
     `Hi ${shipping.firstName || "there"},\n\n` +
     `Thank you for your order with Aura Steps — we've received it and it's being prepared with care.\n\n` +
@@ -748,7 +755,6 @@ function sendOrderEmail({ ref, total, cart, shipping, method }) {
   const payload = {
     _subject: `New Aura Steps order ${ref} — ${usdTotal}`,
     _template: "table",
-    _autoresponse: autoresponse,
     Order: ref,
     Total_USD: usdTotal,
     Customer_saw: shownTotal,
@@ -758,11 +764,46 @@ function sendOrderEmail({ ref, total, cart, shipping, method }) {
     email: shipping.email,
     Ship_to: `${shipping.address}${shipping.address2 ? ", " + shipping.address2 : ""}, ${shipping.city}, ${shipping.state} ${shipping.postal}, ${shipping.country}`,
   };
-  fetch("https://formsubmit.co/ajax/" + encodeURIComponent(ORDER_EMAIL), {
+  Promise.resolve(branded).then((ok) => {
+    if (!ok) payload._autoresponse = autoresponse; // fallback confirmation only if branded email failed
+    fetch("https://formsubmit.co/ajax/" + encodeURIComponent(ORDER_EMAIL), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(payload),
+    }).catch(() => {});
+  });
+}
+
+/* POSTs the order to the Cloudflare Worker, which emails the branded, on-brand
+   confirmation from support@aurastepsusa.com via Resend. Resolves true on success. */
+function sendBrandedEmail({ ref, total, cart, shipping }) {
+  if (typeof ORDER_EMAIL_WORKER === "undefined" || !ORDER_EMAIL_WORKER) return Promise.resolve(false);
+  if (!shipping || !shipping.email) return Promise.resolve(false);
+  const items = cart.map((i) => {
+    const p = productById(i.id);
+    return { name: p.name, style: p.style, size: i.size, qty: i.qty, price: money(p.price * i.qty) };
+  });
+  const body = {
+    ref,
+    email: shipping.email,
+    firstName: shipping.firstName,
+    lastName: shipping.lastName,
+    total: money(total),
+    items,
+    shipping: {
+      line1: shipping.address,
+      line2: shipping.address2 || "",
+      city: shipping.city,
+      state: shipping.state,
+      postal: shipping.postal,
+      country: shipping.country,
+    },
+  };
+  return fetch(ORDER_EMAIL_WORKER, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify(payload),
-  }).catch(() => {});
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  }).then((r) => r.ok).catch(() => false);
 }
 
 /* ---------- Page: contact ---------- */

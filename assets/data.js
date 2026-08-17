@@ -30,6 +30,12 @@ const SHIPPING_FLAT = 40;
    the link once and every future order lands in this inbox. */
 const ORDER_EMAIL = "ugwunelson0@gmail.com";
 
+/* Cloudflare Worker that sends the branded order-confirmation email from
+   support@aurastepsusa.com via Resend. This URL is public and safe to expose —
+   the secret Resend key lives inside the Worker, never in this file. If this is
+   left blank, checkout falls back to the plain FormSubmit confirmation. */
+const ORDER_EMAIL_WORKER = "https://aura-email.nelsonproboxer.workers.dev/";
+
 /* Public contact details shown on the site. SUPPORT_EMAIL is what customers
    see; it starts receiving mail once the aurastepsusa.com domain + free
    mailbox are set up. Until then, the contact form and orders still deliver
