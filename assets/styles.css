@@ -580,3 +580,17 @@ img { max-width: 100%; }
   .nav-links a { padding: 0.7rem 0; border-bottom: none; }
   .menu-btn { display: grid; }
 }
+
+/* ---------- Legal / policy pages ---------- */
+.legal-body { color: hsl(var(--muted-foreground)); font-size: 1rem; line-height: 1.75; }
+.legal-body h2 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  color: hsl(var(--foreground));
+  font-size: 1.5rem; font-weight: 600;
+  margin: 2.2rem 0 0.6rem;
+}
+.legal-body p { margin: 0 0 1rem; }
+.legal-body ul, .legal-body ol { margin: 0 0 1rem; padding-left: 1.3rem; }
+.legal-body li { margin: 0.35rem 0; }
+.legal-body a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 2px; }
+.legal-body strong { color: hsl(var(--foreground)); }

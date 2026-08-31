@@ -147,6 +147,13 @@ function renderChrome(active) {
         <a href="about.html">Our Story</a>
       </div>
       <div class="footer-col">
+        <h5>Legal</h5>
+        <a href="shipping.html">Shipping</a>
+        <a href="returns.html">Returns &amp; Refunds</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+      </div>
+      <div class="footer-col">
         <h5>Contact</h5>
         <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>
         <a href="tel:${SUPPORT_PHONE.replace(/[^+\\d]/g, "")}">${SUPPORT_PHONE}</a>
