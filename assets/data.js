@@ -49,6 +49,14 @@ const SUPPORT_ADDRESS = "85 Washington St, Delaware City, DE 19706";
    domain in the Geoapify dashboard (Allowed origins → aurastepsusa.com). */
 const GEOAPIFY_KEY = "f15f99b87dc24e14b916620b18d972b0";
 
+/* ---- Advertising & analytics pixels ----
+   These IDs are PUBLIC (they live in the browser by design) — safe to expose.
+   Each pixel only loads when its ID is filled in; leave blank to disable.
+   Events fired automatically: ViewContent, AddToCart, InitiateCheckout, Purchase. */
+const TIKTOK_PIXEL_ID = "DAB284JC77UES974BEC0";
+const META_PIXEL_ID = "";      // paste your Meta Pixel ID here once your account is approved
+const GOOGLE_TAG_ID = "";      // paste your GA4 / Google Ads tag (e.g. "G-XXXXXXX" or "AW-XXXXXXX")
+
 /* US states for the checkout address dropdown (shipping is US-only for now). */
 const US_STATES = [
   { c: "AL", n: "Alabama" }, { c: "AK", n: "Alaska" }, { c: "AZ", n: "Arizona" }, { c: "AR", n: "Arkansas" },

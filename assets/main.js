@@ -186,6 +186,8 @@ function addToCart(id, size, qty = 1) {
   if (existing) existing.qty += qty;
   else cart.push({ key, id, size, qty });
   saveCart(cart);
+  var _p = productById(id);
+  if (_p) pxTrack("add", _p.price * qty, [{ id: _p.id, name: _p.name, usd: _p.price, qty: qty }]);
 }
 function cartSubtotal(cart) {
   return cart.reduce((s, i) => s + productById(i.id).price * i.qty, 0);
@@ -338,6 +340,7 @@ function initProduct() {
   setPrice($("#pdPrice"), p.price);
   $("#pdDesc").textContent = p.description;
   $("#pdChartWrap").innerHTML = sizeTableHTML(true);
+  pxTrack("view", p.price, [{ id: p.id, name: p.name, usd: p.price, qty: 1 }]);
 
   let selectedSize = null;
   let qty = 1;
@@ -452,6 +455,7 @@ function initCheckout() {
   else setPrice(coShipEl, ship);
   setPrice($("#coTotal"), sub + ship);
   const total = sub + ship;
+  pxTrack("checkout", total, cart.map((i) => { const pp = productById(i.id); return { id: i.id, name: pp.name, usd: pp.price, qty: i.qty }; }));
 
   const showWallet = (coin) => {
     const w = WALLETS[coin];
@@ -715,6 +719,7 @@ function finalizeOrder({ ref, total, cart, shipping, method }) {
   const orders = JSON.parse(localStorage.getItem("aura-orders") || "[]");
   orders.push({ ref, date: new Date().toISOString(), total, method, shipping, items: cart });
   localStorage.setItem("aura-orders", JSON.stringify(orders));
+  pxTrack("purchase", total, cart.map((i) => { const pp = productById(i.id); return { id: i.id, name: pp.name, usd: pp.price, qty: i.qty }; }));
   sendOrderEmail({ ref, total, cart, shipping, method });
   saveCart([]);
   $("#orderRef").textContent = ref;
@@ -856,7 +861,77 @@ function initSizeGuide() {
 
 /* ---------- Boot ---------- */
 
+/* ---------- Advertising & analytics pixels ---------- */
+/* IDs come from data.js (TIKTOK_PIXEL_ID / META_PIXEL_ID / GOOGLE_TAG_ID). Each
+   pixel loads only when its ID is set; all IDs are public and safe to expose. */
+function initPixels() {
+  // TikTok
+  if (typeof TIKTOK_PIXEL_ID !== "undefined" && TIKTOK_PIXEL_ID) {
+    !function (w, d, t) {
+      w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || []; ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie", "holdConsent", "revokeConsent", "grantConsent"], ttq.setAndDefer = function (t, e) { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } }; for (var i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(ttq, ttq.methods[i]); ttq.instance = function (t) { for (var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++) ttq.setAndDefer(e, ttq.methods[n]); return e }, ttq.load = function (e, n) { var r = "https://analytics.tiktok.com/i18n/pixel/events.js"; ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = r, ttq._t = ttq._t || {}, ttq._t[e] = +new Date, ttq._o = ttq._o || {}, ttq._o[e] = n || {}; n = document.createElement("script"); n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e) };
+      ttq.load(TIKTOK_PIXEL_ID);
+      ttq.page();
+    }(window, document, "ttq");
+  }
+  // Meta (Facebook / Instagram)
+  if (typeof META_PIXEL_ID !== "undefined" && META_PIXEL_ID) {
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments) };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = [];
+      t = b.createElement(e); t.async = !0; t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
+    }(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+    window.fbq("init", META_PIXEL_ID);
+    window.fbq("track", "PageView");
+  }
+  // Google (GA4 / Google Ads)
+  if (typeof GOOGLE_TAG_ID !== "undefined" && GOOGLE_TAG_ID) {
+    var g = document.createElement("script"); g.async = true;
+    g.src = "https://www.googletagmanager.com/gtag/js?id=" + GOOGLE_TAG_ID;
+    document.head.appendChild(g);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag("js", new Date());
+    window.gtag("config", GOOGLE_TAG_ID);
+  }
+}
+
+/* Fire a normalized commerce event to whichever pixels are active.
+   kind: "view" | "add" | "checkout" | "purchase". valueUsd is the USD amount;
+   items: [{ id, name, usd, qty }]. Values are converted to the shopper's currency. */
+function pxTrack(kind, valueUsd, items) {
+  var cur = getCurrency();
+  var rate = 1;
+  if (cur === "GBP") {
+    rate = (typeof FX !== "undefined" && FX && FX.GBP) ? FX.GBP
+         : (typeof FX_FALLBACK !== "undefined" ? FX_FALLBACK.GBP : 0.74);
+  }
+  var value = Math.round(Number(valueUsd || 0) * rate);
+  items = items || [];
+  try {
+    var tt = { view: "ViewContent", add: "AddToCart", checkout: "InitiateCheckout", purchase: "CompletePayment" }[kind];
+    if (window.ttq && tt) window.ttq.track(tt, {
+      contents: items.map(function (i) { return { content_id: String(i.id), content_type: "product", content_name: i.name, quantity: i.qty || 1, price: Math.round((i.usd || 0) * rate) }; }),
+      value: value, currency: cur,
+    });
+  } catch (e) {}
+  try {
+    var fb = { view: "ViewContent", add: "AddToCart", checkout: "InitiateCheckout", purchase: "Purchase" }[kind];
+    if (window.fbq && fb) window.fbq("track", fb, {
+      content_ids: items.map(function (i) { return String(i.id); }),
+      content_type: "product", value: value, currency: cur,
+    });
+  } catch (e) {}
+  try {
+    var ga = { view: "view_item", add: "add_to_cart", checkout: "begin_checkout", purchase: "purchase" }[kind];
+    if (window.gtag && ga) window.gtag("event", ga, {
+      currency: cur, value: value,
+      items: items.map(function (i) { return { item_id: String(i.id), item_name: i.name, price: Math.round((i.usd || 0) * rate), quantity: i.qty || 1 }; }),
+    });
+  } catch (e) {}
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  initPixels();
   applyTheme(localStorage.getItem("aura-theme") || "light");
   const page = document.body.dataset.page;
   renderChrome(page === "home" ? "index.html" : page + ".html");
