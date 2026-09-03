@@ -614,3 +614,6 @@ img { max-width: 100%; }
 @media (max-width: 620px) { .country-picker select { max-width: 5.5rem; } }
 /* keep hidden address fields hidden inside styled forms */
 .checkout-form [hidden] { display: none !important; }
+
+/* Small helper hint under form fields */
+.field-hint { font-size: 0.78rem; color: hsl(var(--muted-foreground)); margin: -0.4rem 0 0.2rem; }
