@@ -53,7 +53,7 @@ const GEOAPIFY_KEY = "f15f99b87dc24e14b916620b18d972b0";
    These IDs are PUBLIC (they live in the browser by design) — safe to expose.
    Each pixel only loads when its ID is filled in; leave blank to disable.
    Events fired automatically: ViewContent, AddToCart, InitiateCheckout, Purchase. */
-const TIKTOK_PIXEL_ID = "DAB284JC77UES974BEC0";
+const TIKTOK_PIXEL_ID = "DACSLNJC77UES974GLF0";
 const META_PIXEL_ID = "";      // paste your Meta Pixel ID here once your account is approved
 const GOOGLE_TAG_ID = "";      // paste your GA4 / Google Ads tag (e.g. "G-XXXXXXX" or "AW-XXXXXXX")
 
