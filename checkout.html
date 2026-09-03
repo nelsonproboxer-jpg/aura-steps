@@ -29,7 +29,7 @@
       <div class="checkout-grid">
         <form class="checkout-form" id="checkoutForm">
           <h3>Delivery details</h3>
-          <p class="ship-note"><strong>We ship to the United States and the United Kingdom.</strong> More countries coming soon.</p>
+          <p class="ship-note"><strong>We ship worldwide.</strong> Choose your country and prices show in your local currency.</p>
           <div class="field-row">
             <input type="text" id="coFirst" placeholder="First name" autocomplete="given-name" required />
             <input type="text" id="coLast" placeholder="Last name" autocomplete="family-name" required />
@@ -53,7 +53,8 @@
             <select id="coState" required>
               <option value="" disabled selected>State</option>
             </select>
-            <input type="text" id="coZip" placeholder="ZIP code" inputmode="text" autocomplete="off" maxlength="5" required />
+            <input type="text" id="coStateText" placeholder="State / province / region (optional)" autocomplete="off" hidden />
+            <input type="text" id="coZip" placeholder="ZIP code" inputmode="text" autocomplete="off" maxlength="10" required />
           </div>
           <p class="field-msg" id="zipMsg" hidden></p>
 

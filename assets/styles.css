@@ -594,3 +594,23 @@ img { max-width: 100%; }
 .legal-body li { margin: 0.35rem 0; }
 .legal-body a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 2px; }
 .legal-body strong { color: hsl(var(--foreground)); }
+
+/* ---------- Country / currency picker (header) ---------- */
+.country-picker { display: inline-flex; align-items: center; gap: .35rem; }
+.country-picker select {
+  max-width: 8.5rem; font: inherit; font-size: .82rem; color: hsl(var(--foreground));
+  background-color: transparent; border: 1px solid hsl(var(--border));
+  border-radius: 999px; padding: .3rem 1.4rem .3rem .65rem; cursor: pointer;
+  -webkit-appearance: none; appearance: none; text-overflow: ellipsis;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right .55rem center;
+}
+.country-picker select:hover { border-color: hsl(var(--primary)); }
+.currency-badge {
+  font-size: .68rem; font-weight: 600; letter-spacing: .04em; color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.09); border-radius: 6px; padding: .2rem .4rem;
+  min-width: 2.5rem; text-align: center;
+}
+@media (max-width: 620px) { .country-picker select { max-width: 5.5rem; } }
+/* keep hidden address fields hidden inside styled forms */
+.checkout-form [hidden] { display: none !important; }

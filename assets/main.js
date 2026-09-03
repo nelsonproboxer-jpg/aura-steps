@@ -4,23 +4,43 @@
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
-/* ---------- Currency (prices are authored in USD) ---------- */
-let FX = { USD: 1, GBP: (typeof FX_FALLBACK !== "undefined" ? FX_FALLBACK.GBP : 0.74) };
-/* Hydrate the cached rate synchronously so the very first render already
-   uses the real rate (avoids prices flashing/differing between pages). */
+/* ---------- Currency (prices authored in USD, shown in the shopper's currency) ---------- */
+let FX = Object.assign({ USD: 1 }, typeof FX_FALLBACK !== "undefined" ? FX_FALLBACK : {});
+/* Hydrate cached rates synchronously so the first render already uses real rates. */
 try {
   const _fx = JSON.parse(localStorage.getItem("aura-fx") || "null");
-  if (_fx && _fx.gbp) FX.GBP = _fx.gbp;
+  if (_fx && _fx.rates) FX = Object.assign(FX, _fx.rates);
+  else if (_fx && _fx.gbp) FX.GBP = _fx.gbp; // migrate old cache shape
 } catch (e) { /* ignore */ }
 
+/* The shopper's chosen country (header/checkout) drives the display currency. */
+function getCountryCode() {
+  const c = localStorage.getItem("aura-country");
+  if (c && typeof COUNTRY_BY_CODE !== "undefined" && COUNTRY_BY_CODE[c]) return c;
+  return "US";
+}
 function getCurrency() {
-  const c = localStorage.getItem("aura-currency");
-  return c && typeof CURRENCIES !== "undefined" && CURRENCIES[c] ? c : "USD";
+  const cc = getCountryCode();
+  const cur = (typeof COUNTRY_BY_CODE !== "undefined" && COUNTRY_BY_CODE[cc] && COUNTRY_BY_CODE[cc].cur) || "USD";
+  return FX[cur] ? cur : "USD"; // only use a currency we can actually convert
+}
+function setCountry(cc) {
+  if (typeof COUNTRY_BY_CODE === "undefined" || !COUNTRY_BY_CODE[cc]) return;
+  localStorage.setItem("aura-country", cc);
+  refreshPrices();
+  const badge = $("#currencyBadge");
+  if (badge) badge.textContent = getCurrency();
+  const sel = $("#countrySelect");
+  if (sel && sel.value !== cc) sel.value = cc;
 }
 function money(usd) {
   const code = getCurrency();
-  const cfg = (typeof CURRENCIES !== "undefined" && CURRENCIES[code]) || { symbol: "$", locale: "en-US" };
-  return cfg.symbol + Math.round(Number(usd) * (FX[code] || 1)).toLocaleString(cfg.locale);
+  const val = Math.round(Number(usd) * (FX[code] || 1));
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: code, maximumFractionDigits: 0 }).format(val);
+  } catch (e) {
+    return "$" + val.toLocaleString("en-US");
+  }
 }
 /* Tag an element with its USD value so it can be re-formatted on switch */
 function setPrice(el, usd) {
@@ -34,16 +54,16 @@ function refreshPrices() {
 async function loadFx() {
   try {
     const cached = JSON.parse(localStorage.getItem("aura-fx") || "null");
-    if (cached && cached.gbp && Date.now() - cached.t < 12 * 3600 * 1000) { FX.GBP = cached.gbp; return; }
+    if (cached && cached.rates && Date.now() - cached.t < 12 * 3600 * 1000) { FX = Object.assign(FX, cached.rates); return; }
     const res = await fetch("https://open.er-api.com/v6/latest/USD");
     if (!res.ok) return;
     const d = await res.json();
-    if (d && d.rates && d.rates.GBP) {
-      FX.GBP = d.rates.GBP;
-      localStorage.setItem("aura-fx", JSON.stringify({ t: Date.now(), gbp: FX.GBP }));
+    if (d && d.rates) {
+      FX = Object.assign(FX, d.rates);
+      localStorage.setItem("aura-fx", JSON.stringify({ t: Date.now(), rates: d.rates }));
       refreshPrices();
     }
-  } catch (e) { /* keep the fallback rate */ }
+  } catch (e) { /* keep the fallback rates */ }
 }
 const escapeHtml = (s) =>
   String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
@@ -100,7 +120,10 @@ function renderChrome(active) {
         ).join("")}
       </nav>
       <div class="nav-actions">
-        <button class="icon-btn currency-btn" id="currencyToggle" aria-label="Switch currency" title="Switch currency"></button>
+        <div class="country-picker" title="Ship-to country & currency">
+          <select id="countrySelect" aria-label="Ship-to country and currency"></select>
+          <span class="currency-badge" id="currencyBadge"></span>
+        </div>
         <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode"></button>
         <a class="icon-btn bag-btn" href="cart.html" aria-label="Shopping bag">
           ${ICONS.bag}<span class="cart-count" id="cartCount">0</span>
@@ -108,15 +131,13 @@ function renderChrome(active) {
         <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu">${ICONS.menu}</button>
       </div>
     </div>`;
-    const curBtn = $("#currencyToggle");
-    if (curBtn) {
-      const paintCur = () => { curBtn.textContent = getCurrency(); };
-      paintCur();
-      curBtn.addEventListener("click", () => {
-        localStorage.setItem("aura-currency", getCurrency() === "USD" ? "GBP" : "USD");
-        paintCur();
-        refreshPrices();
-      });
+    const cSel = $("#countrySelect");
+    if (cSel && typeof COUNTRIES !== "undefined") {
+      cSel.innerHTML = COUNTRIES.map((c) => `<option value="${c.c}">${escapeHtml(c.n)}</option>`).join("");
+      cSel.value = getCountryCode();
+      const badge = $("#currencyBadge");
+      if (badge) badge.textContent = getCurrency();
+      cSel.addEventListener("change", () => setCountry(cSel.value));
     }
     const isDark = document.documentElement.classList.contains("dark");
     $("#themeToggle").innerHTML = isDark ? ICONS.sun : ICONS.moon;
@@ -465,11 +486,18 @@ function initCheckout() {
   showWallet("BTC");
   $("#cryptoCoin").addEventListener("change", (e) => showWallet(e.target.value));
 
-  // ---- Adaptive US / UK address form ----
+  // ---- Worldwide address form ----
   const countrySel = $("#coCountry");
   const stateSel = $("#coState");
+  const stateText = $("#coStateText");
   const zipInput = $("#coZip");
   const zipMsg = $("#zipMsg");
+
+  // Fill the country dropdown with every country, defaulting to the chosen one.
+  if (typeof COUNTRIES !== "undefined") {
+    countrySel.innerHTML = COUNTRIES.map((c) => `<option value="${c.c}">${escapeHtml(c.n)}</option>`).join("");
+    countrySel.value = getCountryCode();
+  }
 
   function setZipMsg(text, kind) {
     if (!zipMsg) return;
@@ -478,31 +506,53 @@ function initCheckout() {
     zipMsg.hidden = !text;
   }
 
+  // US & UK get structured dropdowns + postal checks; everywhere else is free-text.
+  const structured = (cc) => cc === "US" || cc === "GB";
+
   function buildStateOptions(cc) {
     const list = cc === "GB" ? (typeof UK_COUNTIES !== "undefined" ? UK_COUNTIES : []) : US_STATES;
     const placeholder = cc === "GB" ? "County (optional)" : "State";
     stateSel.innerHTML =
       `<option value="" ${cc === "GB" ? "" : "disabled"} selected>${placeholder}</option>` +
       list.map((s) => `<option value="${escapeHtml(s.c)}">${escapeHtml(s.n)}</option>`).join("");
-    stateSel.required = cc !== "GB";
+    stateSel.required = cc === "US";
   }
   function applyCountry(cc) {
-    buildStateOptions(cc);
-    zipInput.placeholder = cc === "GB" ? "Postcode" : "ZIP code";
-    zipInput.setAttribute("maxlength", cc === "GB" ? "8" : "5");
+    if (structured(cc)) {
+      stateSel.hidden = false; stateSel.disabled = false;
+      if (stateText) { stateText.hidden = true; stateText.disabled = true; stateText.required = false; }
+      buildStateOptions(cc);
+      zipInput.placeholder = cc === "GB" ? "Postcode" : "ZIP code";
+      zipInput.setAttribute("maxlength", cc === "GB" ? "8" : "10");
+      zipInput.required = true;
+    } else {
+      stateSel.hidden = true; stateSel.disabled = true; stateSel.required = false;
+      if (stateText) { stateText.hidden = false; stateText.disabled = false; stateText.required = false; }
+      zipInput.placeholder = "Postal code (optional)";
+      zipInput.setAttribute("maxlength", "12");
+      zipInput.required = false;
+    }
     setZipMsg("", "");
   }
   applyCountry(countrySel.value || "US");
   countrySel.addEventListener("change", () => {
+    setCountry(countrySel.value); // switch the whole site's currency to match
     applyCountry(countrySel.value);
     $("#coCity").value = "";
+    if (stateText) stateText.value = "";
+    stateSel.value = "";
     zipInput.value = "";
   });
 
-  // Set the state/county dropdown (adds the value for UK if not already listed)
+  // Set the state/county dropdown (adds the value for UK if not already listed);
+  // for other countries, fill the free-text region field instead.
   function setStateValue(val) {
     if (!val) return;
     const norm = String(val).trim();
+    if (!structured(countrySel.value)) {
+      if (stateText && !stateText.value.trim()) stateText.value = norm;
+      return;
+    }
     let opt = [...stateSel.options].find(
       (o) => o.value.toLowerCase() === norm.toLowerCase() || o.textContent.toLowerCase() === norm.toLowerCase()
     );
@@ -520,6 +570,7 @@ function initCheckout() {
   async function checkZip() {
     const cc = countrySel.value;
     const zip = (zipInput.value || "").trim();
+    if (!structured(cc)) { setZipMsg("", ""); return true; } // no strict check outside US/UK
     if (cc === "GB") {
       if (!/^[A-Za-z]{1,2}\d[A-Za-z\d]?\s*\d[A-Za-z]{2}$/.test(zip)) {
         setZipMsg("Enter a valid UK postcode (e.g. SW1A 1AA).", "error");
@@ -608,7 +659,7 @@ function initCheckout() {
       if (!r) return;
       $("#coStreet").value = r.address_line1 || [r.housenumber, r.street].filter(Boolean).join(" ") || $("#coStreet").value;
       if (r.city) $("#coCity").value = r.city;
-      setStateValue(countrySel.value === "GB" ? (r.county || r.state) : r.state_code);
+      setStateValue(structured(countrySel.value) ? (countrySel.value === "GB" ? (r.county || r.state) : r.state_code) : (r.state || r.county));
       if (r.postcode) zipInput.value = r.postcode;
       checkZip();
     },
@@ -619,7 +670,7 @@ function initCheckout() {
     onSelect: (r) => {
       if (!r) return;
       if (r.city) $("#coCity").value = r.city;
-      setStateValue(countrySel.value === "GB" ? (r.county || r.state) : r.state_code);
+      setStateValue(structured(countrySel.value) ? (countrySel.value === "GB" ? (r.county || r.state) : r.state_code) : (r.state || r.county));
     },
   });
 
@@ -648,9 +699,10 @@ function initCheckout() {
       address: $("#coStreet").value.trim(),
       address2: $("#coStreet2").value.trim(),
       city: $("#coCity").value.trim(),
-      state: stateSel.value,
+      state: structured(countrySel.value) ? stateSel.value : (stateText ? stateText.value.trim() : ""),
       postal: zipInput.value.trim(),
-      country: countrySel.value === "GB" ? "United Kingdom" : "United States",
+      country: (typeof COUNTRY_BY_CODE !== "undefined" && COUNTRY_BY_CODE[countrySel.value] && COUNTRY_BY_CODE[countrySel.value].n) || countrySel.value,
+      countryCode: countrySel.value,
     };
     const ref = "AS-" + Math.floor(100000 + Math.random() * 900000);
     if (method === "card") {
@@ -688,13 +740,16 @@ async function payWithCard({ ref, total, cart, shipping }) {
     toast("Card window blocked — turn off any ad-blocker or VPN, use a normal browser (Safari/Chrome), or pay with crypto.");
     return;
   }
-  const cur = getCurrency();
-  const amount = cur === "GBP" ? Math.round(total * (FX.GBP || 0.74)) : Math.round(total);
+  // Charge in the shopper's currency when Flutterwave supports it; otherwise USD.
+  const display = getCurrency();
+  const supported = typeof FLW_CURRENCIES !== "undefined" ? FLW_CURRENCIES : ["USD"];
+  const chargeCur = supported.indexOf(display) !== -1 ? display : "USD";
+  const amount = Math.max(1, Math.round(Number(total) * (FX[chargeCur] || 1)));
   FlutterwaveCheckout({
     public_key: FLUTTERWAVE_PUBLIC_KEY,
     tx_ref: ref,
     amount: amount,
-    currency: cur,
+    currency: chargeCur,
     payment_options: "card",
     customer: { email: shipping.email, name: `${shipping.firstName} ${shipping.lastName}` },
     customizations: {
@@ -708,7 +763,7 @@ async function payWithCard({ ref, total, cart, shipping }) {
     },
     callback: function (data) {
       if (data && (data.status === "successful" || data.status === "completed")) {
-        finalizeOrder({ ref, total, cart, shipping, method: `Card (Flutterwave · ${cur})` });
+        finalizeOrder({ ref, total, cart, shipping, method: `Card (Flutterwave · ${chargeCur})` });
       }
     },
     onclose: function () { /* customer closed the window without paying */ },

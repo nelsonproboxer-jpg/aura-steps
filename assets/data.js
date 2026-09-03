@@ -9,13 +9,59 @@
    - isNew: true puts the piece in the home "New Arrivals" row.
    ============================================================ */
 
-/* Displayed-currency options. Product prices above are authored in USD; the
-   live USD→GBP rate is fetched daily, with this fallback if it's unreachable. */
-const CURRENCIES = {
-  USD: { symbol: "$", locale: "en-US" },
-  GBP: { symbol: "£", locale: "en-GB" },
-};
-const FX_FALLBACK = { USD: 1, GBP: 0.74 };
+/* ---- Worldwide currency & shipping ----
+   Prices are authored in USD. Shoppers pick their country (header or checkout);
+   every price is then converted and shown in that country's currency using live
+   FX rates. Card payments are charged by Flutterwave in the shopper's currency
+   when Flutterwave supports it, otherwise in USD (their bank converts). */
+const FX_FALLBACK = { USD: 1, GBP: 0.74, EUR: 0.92, NGN: 1600, CAD: 1.36, AUD: 1.5 };
+
+/* Currencies Flutterwave can charge in directly for this merchant. Any other
+   currency is displayed locally but charged in USD. */
+const FLW_CURRENCIES = ["USD", "NGN", "GBP", "EUR", "GHS", "KES", "ZAR", "TZS", "UGX", "RWF", "ZMW", "MWK", "XAF", "XOF", "EGP", "MAD"];
+
+/* Every country + its primary currency (ISO 4217). We ship worldwide. */
+const COUNTRY_DATA = [
+  ["US","United States","USD"],["GB","United Kingdom","GBP"],["CA","Canada","CAD"],["AU","Australia","AUD"],["NZ","New Zealand","NZD"],
+  ["IE","Ireland","EUR"],["FR","France","EUR"],["DE","Germany","EUR"],["IT","Italy","EUR"],["ES","Spain","EUR"],["PT","Portugal","EUR"],
+  ["NL","Netherlands","EUR"],["BE","Belgium","EUR"],["AT","Austria","EUR"],["LU","Luxembourg","EUR"],["FI","Finland","EUR"],["GR","Greece","EUR"],
+  ["CY","Cyprus","EUR"],["MT","Malta","EUR"],["EE","Estonia","EUR"],["LV","Latvia","EUR"],["LT","Lithuania","EUR"],["SK","Slovakia","EUR"],
+  ["SI","Slovenia","EUR"],["HR","Croatia","EUR"],["AD","Andorra","EUR"],["MC","Monaco","EUR"],["SM","San Marino","EUR"],["VA","Vatican City","EUR"],
+  ["XK","Kosovo","EUR"],["ME","Montenegro","EUR"],["CH","Switzerland","CHF"],["LI","Liechtenstein","CHF"],["NO","Norway","NOK"],["SE","Sweden","SEK"],
+  ["DK","Denmark","DKK"],["IS","Iceland","ISK"],["PL","Poland","PLN"],["CZ","Czechia","CZK"],["HU","Hungary","HUF"],["RO","Romania","RON"],
+  ["BG","Bulgaria","BGN"],["RS","Serbia","RSD"],["BA","Bosnia and Herzegovina","BAM"],["MK","North Macedonia","MKD"],["AL","Albania","ALL"],
+  ["MD","Moldova","MDL"],["UA","Ukraine","UAH"],["BY","Belarus","BYN"],["RU","Russia","RUB"],["TR","Turkey","TRY"],
+  ["NG","Nigeria","NGN"],["GH","Ghana","GHS"],["KE","Kenya","KES"],["ZA","South Africa","ZAR"],["TZ","Tanzania","TZS"],["UG","Uganda","UGX"],
+  ["RW","Rwanda","RWF"],["ZM","Zambia","ZMW"],["MW","Malawi","MWK"],["EG","Egypt","EGP"],["MA","Morocco","MAD"],["DZ","Algeria","DZD"],
+  ["TN","Tunisia","TND"],["LY","Libya","LYD"],["SN","Senegal","XOF"],["CI","Cote d'Ivoire","XOF"],["BJ","Benin","XOF"],["BF","Burkina Faso","XOF"],
+  ["ML","Mali","XOF"],["NE","Niger","XOF"],["TG","Togo","XOF"],["GW","Guinea-Bissau","XOF"],["CM","Cameroon","XAF"],["GA","Gabon","XAF"],
+  ["CG","Congo","XAF"],["TD","Chad","XAF"],["CF","Central African Republic","XAF"],["GQ","Equatorial Guinea","XAF"],["CD","DR Congo","CDF"],
+  ["AO","Angola","AOA"],["MZ","Mozambique","MZN"],["BW","Botswana","BWP"],["NA","Namibia","NAD"],["ZW","Zimbabwe","USD"],["LS","Lesotho","LSL"],
+  ["SZ","Eswatini","SZL"],["MG","Madagascar","MGA"],["MU","Mauritius","MUR"],["SC","Seychelles","SCR"],["CV","Cape Verde","CVE"],
+  ["GM","Gambia","GMD"],["GN","Guinea","GNF"],["LR","Liberia","LRD"],["SL","Sierra Leone","SLE"],["ET","Ethiopia","ETB"],["SO","Somalia","SOS"],
+  ["DJ","Djibouti","DJF"],["ER","Eritrea","ERN"],["SD","Sudan","SDG"],["SS","South Sudan","SSP"],["BI","Burundi","BIF"],["KM","Comoros","KMF"],
+  ["MR","Mauritania","MRU"],["ST","Sao Tome and Principe","STN"],
+  ["AE","United Arab Emirates","AED"],["SA","Saudi Arabia","SAR"],["QA","Qatar","QAR"],["KW","Kuwait","KWD"],["BH","Bahrain","BHD"],
+  ["OM","Oman","OMR"],["JO","Jordan","JOD"],["LB","Lebanon","LBP"],["IL","Israel","ILS"],["IQ","Iraq","IQD"],["YE","Yemen","YER"],
+  ["IR","Iran","IRR"],["SY","Syria","SYP"],["AF","Afghanistan","AFN"],["PK","Pakistan","PKR"],["IN","India","INR"],["BD","Bangladesh","BDT"],
+  ["LK","Sri Lanka","LKR"],["NP","Nepal","NPR"],["BT","Bhutan","INR"],["MV","Maldives","MVR"],["CN","China","CNY"],["HK","Hong Kong","HKD"],
+  ["MO","Macau","MOP"],["TW","Taiwan","TWD"],["JP","Japan","JPY"],["KR","South Korea","KRW"],["MN","Mongolia","MNT"],["KZ","Kazakhstan","KZT"],
+  ["UZ","Uzbekistan","UZS"],["KG","Kyrgyzstan","KGS"],["TJ","Tajikistan","TJS"],["TM","Turkmenistan","TMT"],["AZ","Azerbaijan","AZN"],
+  ["AM","Armenia","AMD"],["GE","Georgia","GEL"],["TH","Thailand","THB"],["VN","Vietnam","VND"],["ID","Indonesia","IDR"],["MY","Malaysia","MYR"],
+  ["SG","Singapore","SGD"],["PH","Philippines","PHP"],["MM","Myanmar","MMK"],["KH","Cambodia","KHR"],["LA","Laos","LAK"],["BN","Brunei","BND"],
+  ["TL","Timor-Leste","USD"],
+  ["MX","Mexico","MXN"],["BR","Brazil","BRL"],["AR","Argentina","ARS"],["CL","Chile","CLP"],["CO","Colombia","COP"],["PE","Peru","PEN"],
+  ["EC","Ecuador","USD"],["BO","Bolivia","BOB"],["PY","Paraguay","PYG"],["UY","Uruguay","UYU"],["VE","Venezuela","VES"],["GY","Guyana","GYD"],
+  ["SR","Suriname","SRD"],["PA","Panama","USD"],["CR","Costa Rica","CRC"],["GT","Guatemala","GTQ"],["HN","Honduras","HNL"],["SV","El Salvador","USD"],
+  ["NI","Nicaragua","NIO"],["DO","Dominican Republic","DOP"],["CU","Cuba","CUP"],["HT","Haiti","HTG"],["JM","Jamaica","JMD"],["TT","Trinidad and Tobago","TTD"],
+  ["BS","Bahamas","BSD"],["BB","Barbados","BBD"],["BZ","Belize","BZD"],["AG","Antigua and Barbuda","XCD"],["DM","Dominica","XCD"],["GD","Grenada","XCD"],
+  ["KN","Saint Kitts and Nevis","XCD"],["LC","Saint Lucia","XCD"],["VC","Saint Vincent and the Grenadines","XCD"],["PR","Puerto Rico","USD"],
+  ["FJ","Fiji","FJD"],["PG","Papua New Guinea","PGK"],["SB","Solomon Islands","SBD"],["VU","Vanuatu","VUV"],["WS","Samoa","WST"],["TO","Tonga","TOP"],
+  ["KI","Kiribati","AUD"],["TV","Tuvalu","AUD"],["NR","Nauru","AUD"],["FM","Micronesia","USD"],["MH","Marshall Islands","USD"],["PW","Palau","USD"],
+];
+const COUNTRIES = COUNTRY_DATA.map(([c, n, cur]) => ({ c, n, cur })).sort((a, b) => a.n.localeCompare(b.n));
+const COUNTRY_BY_CODE = Object.fromEntries(COUNTRIES.map((x) => [x.c, x]));
+const CURRENCY_CODES = new Set(["USD", ...COUNTRIES.map((x) => x.cur)]);
 
 /* ---- Card payments (Flutterwave) — LIVE ----
    This is the LIVE key: real cards are charged real money and settle to the
