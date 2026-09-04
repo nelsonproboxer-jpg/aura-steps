@@ -37,7 +37,7 @@ function money(usd) {
   const code = getCurrency();
   const val = Math.round(Number(usd) * (FX[code] || 1));
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: code, maximumFractionDigits: 0 }).format(val);
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: code, currencyDisplay: "narrowSymbol", maximumFractionDigits: 0 }).format(val);
   } catch (e) {
     return "$" + val.toLocaleString("en-US");
   }
