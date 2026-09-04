@@ -87,7 +87,7 @@ const ORDER_EMAIL_WORKER = "https://aura-email.nelsonproboxer.workers.dev/";
    mailbox are set up. Until then, the contact form and orders still deliver
    to ORDER_EMAIL above. */
 const SUPPORT_EMAIL = "support@aurastepsusa.com";
-const SUPPORT_PHONE = "+1 (302) 261-9411";
+const SUPPORT_PHONE = "+1 (213) 357-0150";
 const SUPPORT_ADDRESS = "85 Washington St, Delaware City, DE 19706";
 
 /* Geoapify API key powers the street-address autocomplete at checkout (free
