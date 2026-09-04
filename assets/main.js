@@ -65,6 +65,21 @@ async function loadFx() {
     }
   } catch (e) { /* keep the fallback rates */ }
 }
+
+/* Auto-detect the shopper's country from their IP on first visit, so prices
+   show in their local currency with no picker needed. Only runs when no
+   country is set yet — an explicit choice (made at checkout) is never
+   overridden by this, and it only ever runs once per browser. */
+async function detectCountryByIp() {
+  if (localStorage.getItem("aura-country")) return;
+  try {
+    const res = await fetch("https://ipwho.is/");
+    if (!res.ok) return;
+    const d = await res.json();
+    const cc = d && d.country_code;
+    if (cc && typeof COUNTRY_BY_CODE !== "undefined" && COUNTRY_BY_CODE[cc]) setCountry(cc);
+  } catch (e) { /* keep the USD default */ }
+}
 const escapeHtml = (s) =>
   String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -120,10 +135,6 @@ function renderChrome(active) {
         ).join("")}
       </nav>
       <div class="nav-actions">
-        <div class="country-picker" title="Ship-to country & currency">
-          <select id="countrySelect" aria-label="Ship-to country and currency"></select>
-          <span class="currency-badge" id="currencyBadge"></span>
-        </div>
         <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode"></button>
         <a class="icon-btn bag-btn" href="cart.html" aria-label="Shopping bag">
           ${ICONS.bag}<span class="cart-count" id="cartCount">0</span>
@@ -131,14 +142,6 @@ function renderChrome(active) {
         <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu">${ICONS.menu}</button>
       </div>
     </div>`;
-    const cSel = $("#countrySelect");
-    if (cSel && typeof COUNTRIES !== "undefined") {
-      cSel.innerHTML = COUNTRIES.map((c) => `<option value="${c.c}">${escapeHtml(c.n)}</option>`).join("");
-      cSel.value = getCountryCode();
-      const badge = $("#currencyBadge");
-      if (badge) badge.textContent = getCurrency();
-      cSel.addEventListener("change", () => setCountry(cSel.value));
-    }
     const isDark = document.documentElement.classList.contains("dark");
     $("#themeToggle").innerHTML = isDark ? ICONS.sun : ICONS.moon;
     $("#themeToggle").addEventListener("click", () => {
@@ -1003,6 +1006,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // apply the saved currency to any prices, then refresh the FX rate
   refreshPrices();
   loadFx();
+  detectCountryByIp();
 
   // inject shared icons referenced by data-icon
   $$("[data-icon]").forEach((el) => { el.innerHTML = ICONS[el.dataset.icon] || ""; });
