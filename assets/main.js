@@ -141,8 +141,12 @@ function renderChrome(active) {
   const header = $("#siteHeader");
   // Scrolling sale banner, sits above the sticky header so it scrolls away.
   if (header && saleActive() && !$(".sale-bar")) {
-    const msg = `${SALE.headline} · ${SALE.endsLabel}`;
-    const run = Array.from({ length: 6 }, () => `<span>${escapeHtml(msg)}</span>`).join("");
+    // The threshold carries data-usd so it converts with the shopper's currency.
+    const shipBit = typeof FREE_SHIPPING_OVER !== "undefined"
+      ? ` · free shipping over <span data-usd="${FREE_SHIPPING_OVER}">${money(FREE_SHIPPING_OVER)}</span>`
+      : "";
+    const msg = `${escapeHtml(SALE.headline)}${shipBit} · ${escapeHtml(SALE.endsLabel)}`;
+    const run = Array.from({ length: 6 }, () => `<span>${msg}</span>`).join("");
     const bar = document.createElement("div");
     bar.className = "sale-bar";
     bar.setAttribute("role", "status");

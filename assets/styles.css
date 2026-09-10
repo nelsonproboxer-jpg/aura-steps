@@ -604,13 +604,13 @@ img { max-width: 100%; }
   overflow: hidden;
   white-space: nowrap;
 }
-.sale-track { display: inline-flex; animation: sale-marquee 38s linear infinite; will-change: transform; }
-.sale-track span {
+.sale-track { display: inline-flex; animation: sale-marquee 46s linear infinite; will-change: transform; }
+.sale-track > span {
   display: inline-block; padding: 0.5rem 0;
   font-size: 0.68rem; font-weight: 600;
   letter-spacing: 0.22em; text-transform: uppercase;
 }
-.sale-track span::after { content: "·"; margin: 0 1.6rem; opacity: 0.5; }
+.sale-track > span::after { content: "·"; margin: 0 1.6rem; opacity: 0.5; }
 @keyframes sale-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .sale-track { animation: none; } }
 
