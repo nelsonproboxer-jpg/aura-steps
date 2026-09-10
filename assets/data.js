@@ -16,6 +16,19 @@
    when Flutterwave supports it, otherwise in USD (their bank converts). */
 const FX_FALLBACK = { USD: 1, GBP: 0.74, EUR: 0.92, NGN: 1600, CAD: 1.36, AUD: 1.5 };
 
+/* ---- Site-wide sale ----
+   Product prices in PRODUCTS below stay at their full list value; this applies
+   the discount on top, so the original price still shows struck through and the
+   sale switches itself off automatically once `ends` passes. Set active:false
+   (or let the date lapse) to return to full price everywhere. */
+const SALE = {
+  active: true,
+  percent: 50,
+  ends: "2026-11-10T23:59:59",
+  headline: "50% off everything",
+  endsLabel: "ends 10 November",
+};
+
 /* Currencies Flutterwave can charge in directly for this merchant. Any other
    currency is displayed locally but charged in USD. */
 const FLW_CURRENCIES = ["USD", "NGN", "GBP", "EUR", "GHS", "KES", "ZAR", "TZS", "UGX", "RWF", "ZMW", "MWK", "XAF", "XOF", "EGP", "MAD"];

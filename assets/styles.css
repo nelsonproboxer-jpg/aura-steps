@@ -596,3 +596,28 @@ img { max-width: 100%; }
 .legal-body strong { color: hsl(var(--foreground)); }
 /* keep hidden address fields hidden inside styled forms */
 .checkout-form [hidden] { display: none !important; }
+
+/* ---------- Sale banner + was/now pricing ---------- */
+.sale-bar {
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+  overflow: hidden;
+  white-space: nowrap;
+}
+.sale-track { display: inline-flex; animation: sale-marquee 38s linear infinite; will-change: transform; }
+.sale-track span {
+  display: inline-block; padding: 0.5rem 0;
+  font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 0.22em; text-transform: uppercase;
+}
+.sale-track span::after { content: "·"; margin: 0 1.6rem; opacity: 0.5; }
+@keyframes sale-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .sale-track { animation: none; } }
+
+.price-was {
+  color: hsl(var(--muted-foreground));
+  font-weight: 300;
+  text-decoration-thickness: 1px;
+  margin-right: 0.45rem;
+}
+.price-now { color: hsl(var(--primary)); font-weight: 600; }

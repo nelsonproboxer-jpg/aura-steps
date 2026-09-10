@@ -42,6 +42,28 @@ function money(usd) {
     return "$" + val.toLocaleString("en-US");
   }
 }
+/* ---------- Sale ----------
+   Prices in PRODUCTS are the full list price. Everything the shopper is
+   actually charged runs through unitUsd(), so the discount applies once, in
+   one place, and lapses on its own once SALE.ends passes. */
+function saleActive() {
+  if (typeof SALE === "undefined" || !SALE.active) return false;
+  const ends = new Date(SALE.ends).getTime();
+  return !isNaN(ends) && Date.now() < ends;
+}
+/* The price actually charged for a list price. */
+function unitUsd(listUsd) {
+  return saleActive() ? Math.round(Number(listUsd) * (1 - SALE.percent / 100)) : Number(listUsd);
+}
+/* Was/now markup for a product's price. Both halves carry data-usd so they
+   re-format themselves when the shopper's currency changes. */
+function priceHTML(listUsd) {
+  if (!saleActive()) return `<span data-usd="${listUsd}">${money(listUsd)}</span>`;
+  const net = unitUsd(listUsd);
+  return `<s class="price-was" data-usd="${listUsd}">${money(listUsd)}</s>` +
+         `<span class="price-now" data-usd="${net}">${money(net)}</span>`;
+}
+
 /* Tag an element with its USD value so it can be re-formatted on switch */
 function setPrice(el, usd) {
   if (!el) return;
@@ -117,6 +139,16 @@ const ICONS = {
 
 function renderChrome(active) {
   const header = $("#siteHeader");
+  // Scrolling sale banner, sits above the sticky header so it scrolls away.
+  if (header && saleActive() && !$(".sale-bar")) {
+    const msg = `${SALE.headline} · ${SALE.endsLabel}`;
+    const run = Array.from({ length: 6 }, () => `<span>${escapeHtml(msg)}</span>`).join("");
+    const bar = document.createElement("div");
+    bar.className = "sale-bar";
+    bar.setAttribute("role", "status");
+    bar.innerHTML = `<div class="sale-track">${run}${run}</div>`;
+    header.parentNode.insertBefore(bar, header);
+  }
   if (header) {
     header.innerHTML = `
     <div class="nav-inner">
@@ -211,10 +243,10 @@ function addToCart(id, size, qty = 1) {
   else cart.push({ key, id, size, qty });
   saveCart(cart);
   var _p = productById(id);
-  if (_p) pxTrack("add", _p.price * qty, [{ id: _p.id, name: _p.name, usd: _p.price, qty: qty }]);
+  if (_p) pxTrack("add", unitUsd(_p.price) * qty, [{ id: _p.id, name: _p.name, usd: unitUsd(_p.price), qty: qty }]);
 }
 function cartSubtotal(cart) {
-  return cart.reduce((s, i) => s + productById(i.id).price * i.qty, 0);
+  return cart.reduce((s, i) => s + unitUsd(productById(i.id).price) * i.qty, 0);
 }
 
 /* ---------- Toast ---------- */
@@ -258,7 +290,7 @@ function productCardHTML(p) {
     <div class="product-card-body">
       <p class="product-style">${p.style}</p>
       <h3>${p.name}</h3>
-      <p class="product-price" data-usd="${p.price}">${money(p.price)}</p>
+      <p class="product-price">${priceHTML(p.price)}</p>
     </div>
   </a>`;
 }
@@ -361,10 +393,12 @@ function initProduct() {
   $("#pdCategory").textContent = p.category;
   $("#pdName").textContent = p.name;
   $("#pdStyle").textContent = p.style;
-  setPrice($("#pdPrice"), p.price);
+  const pdPrice = $("#pdPrice");
+  delete pdPrice.dataset.usd;
+  pdPrice.innerHTML = priceHTML(p.price);
   $("#pdDesc").textContent = p.description;
   $("#pdChartWrap").innerHTML = sizeTableHTML(true);
-  pxTrack("view", p.price, [{ id: p.id, name: p.name, usd: p.price, qty: 1 }]);
+  pxTrack("view", unitUsd(p.price), [{ id: p.id, name: p.name, usd: unitUsd(p.price), qty: 1 }]);
 
   let selectedSize = null;
   let qty = 1;
@@ -430,7 +464,7 @@ function initCart() {
               <span>${item.qty}</span>
               <button data-act="inc" aria-label="Increase">+</button>
             </div>
-            <span class="cart-item-price" data-usd="${p.price * item.qty}">${money(p.price * item.qty)}</span>
+            <span class="cart-item-price" data-usd="${unitUsd(p.price) * item.qty}">${money(unitUsd(p.price) * item.qty)}</span>
           </div>
           <button class="cart-item-remove" data-act="remove">Remove</button>
         </div>`;
@@ -471,7 +505,7 @@ function initCheckout() {
   const ship = sub >= FREE_SHIPPING_OVER ? 0 : SHIPPING_FLAT;
   $("#coItems").innerHTML = cart.map((i) => {
     const p = productById(i.id);
-    return `<div class="summary-item"><span>${p.name} · US ${i.size} × ${i.qty}</span><span data-usd="${p.price * i.qty}">${money(p.price * i.qty)}</span></div>`;
+    return `<div class="summary-item"><span>${p.name} · US ${i.size} × ${i.qty}</span><span data-usd="${unitUsd(p.price) * i.qty}">${money(unitUsd(p.price) * i.qty)}</span></div>`;
   }).join("");
   setPrice($("#coSubtotal"), sub);
   const coShipEl = $("#coShipping");
@@ -479,7 +513,7 @@ function initCheckout() {
   else setPrice(coShipEl, ship);
   setPrice($("#coTotal"), sub + ship);
   const total = sub + ship;
-  pxTrack("checkout", total, cart.map((i) => { const pp = productById(i.id); return { id: i.id, name: pp.name, usd: pp.price, qty: i.qty }; }));
+  pxTrack("checkout", total, cart.map((i) => { const pp = productById(i.id); return { id: i.id, name: pp.name, usd: unitUsd(pp.price), qty: i.qty }; }));
 
   const showWallet = (coin) => {
     const w = WALLETS[coin];
@@ -777,7 +811,7 @@ function finalizeOrder({ ref, total, cart, shipping, method }) {
   const orders = JSON.parse(localStorage.getItem("aura-orders") || "[]");
   orders.push({ ref, date: new Date().toISOString(), total, method, shipping, items: cart });
   localStorage.setItem("aura-orders", JSON.stringify(orders));
-  pxTrack("purchase", total, cart.map((i) => { const pp = productById(i.id); return { id: i.id, name: pp.name, usd: pp.price, qty: i.qty }; }));
+  pxTrack("purchase", total, cart.map((i) => { const pp = productById(i.id); return { id: i.id, name: pp.name, usd: unitUsd(pp.price), qty: i.qty }; }));
   sendOrderEmail({ ref, total, cart, shipping, method });
   saveCart([]);
   $("#orderRef").textContent = ref;
@@ -795,7 +829,7 @@ function finalizeOrder({ ref, total, cart, shipping, method }) {
 function sendOrderEmail({ ref, total, cart, shipping, method }) {
   const items = cart.map((i) => {
     const p = productById(i.id);
-    return `• ${p.name} — ${p.style} (US ${i.size}) ×${i.qty} — $${(p.price * i.qty).toLocaleString("en-US")}`;
+    return `• ${p.name} — ${p.style} (US ${i.size}) ×${i.qty} — $${(unitUsd(p.price) * i.qty).toLocaleString("en-US")}`;
   }).join("\n");
   const cur = getCurrency();
   const usdTotal = "$" + Math.round(total).toLocaleString("en-US");
@@ -851,7 +885,7 @@ function sendBrandedEmail({ ref, total, cart, shipping }) {
   if (!shipping || !shipping.email) return Promise.resolve(false);
   const items = cart.map((i) => {
     const p = productById(i.id);
-    return { name: p.name, style: p.style, size: i.size, qty: i.qty, price: money(p.price * i.qty) };
+    return { name: p.name, style: p.style, size: i.size, qty: i.qty, price: money(unitUsd(p.price) * i.qty) };
   });
   const body = {
     ref,
