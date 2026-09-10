@@ -81,7 +81,7 @@ const CURRENCY_CODES = new Set(["USD", ...COUNTRIES.map((x) => x.cur)]);
    Flutterwave account. Charges in the currency the shopper is viewing
    (USD/GBP). (Previous test key was FLWPUBK_TEST-2eeff863…) */
 const FLUTTERWAVE_PUBLIC_KEY = "FLWPUBK-e6e8aaa775a339db52e1bd3678e9e9a9-X";
-const FREE_SHIPPING_OVER = 500;
+const FREE_SHIPPING_OVER = 250;
 const SHIPPING_FLAT = 40;
 
 /* Orders are emailed here via FormSubmit — no signup, no API key. On the

@@ -1037,6 +1037,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if (inits[page]) inits[page]();
   initReveals();
 
+  // keep every free-shipping figure on the page tied to the actual threshold
+  if (typeof FREE_SHIPPING_OVER !== "undefined") {
+    $$(".js-free-ship").forEach((el) => setPrice(el, FREE_SHIPPING_OVER));
+  }
+
   // apply the saved currency to any prices, then refresh the FX rate
   refreshPrices();
   loadFx();
