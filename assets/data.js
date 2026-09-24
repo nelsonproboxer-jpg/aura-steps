@@ -191,7 +191,7 @@ const PRODUCTS = [
   { id: "h30", name: "Priya", style: "Rouge Block Pump", category: "heels", price: 660, badge: null, featured: false, isNew: false, image: "images/heels-30.webp",
     description: "Liquid-red patent on a confident block heel. Power dressing, distilled to one shoe." },
 
-  // ---------- FLATS (9) ----------
+  // ---------- FLATS (10) ----------
   { id: "f01", name: "Aria", style: "Marigold Pointed Flat", category: "flats", price: 320, badge: null, featured: false, isNew: false, image: "images/flats-01.webp",
     description: "A sun-drenched marigold flat with a sharp pointed toe. Instant polish, zero compromise." },
   { id: "f04", name: "Dahlia", style: "Saffron Kiltie Moccasin", category: "flats", price: 360, badge: null, featured: false, isNew: false, image: "images/flats-04.webp",
@@ -210,6 +210,8 @@ const PRODUCTS = [
     description: "Metallic lace over a satin-lined flat. Occasionwear that keeps up with the dance floor." },
   { id: "f17", name: "Iris", style: "Noir Brogue Oxford", category: "flats", price: 295, badge: null, featured: false, isNew: false, image: "images/flats-17.webp",
     description: "A classic black brogue oxford, broken-in soft. Heritage tailoring for her." },
+  { id: "f18", name: "Colette", style: "Blush Mary Jane Ballerina", category: "flats", price: 425, badge: "New", featured: false, isNew: true, image: "images/flats-18.webp",
+    description: "Rose satin with twin buckled straps and a hand-tied bow. The ballet flat, dressed for dinner." },
 
   // ---------- BOOTS (9) ----------
   { id: "b01", name: "Isolde", style: "Noir Stiletto Ankle Boot", category: "boots", price: 950, badge: "Bestseller", featured: true, isNew: false, image: "images/boots-01.webp",
