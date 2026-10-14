@@ -621,3 +621,17 @@ img { max-width: 100%; }
   margin-right: 0.45rem;
 }
 .price-now { color: hsl(var(--primary)); font-weight: 600; }
+
+/* ---------- Product gallery thumbnails ---------- */
+.pd-thumbs { display: flex; gap: 0.6rem; margin-top: 0.75rem; flex-wrap: wrap; }
+.pd-thumb {
+  width: 68px; height: 68px; flex: none; padding: 0; cursor: pointer;
+  border-radius: 0.85rem; overflow: hidden; background: var(--shoe-pane);
+  border: 1.5px solid transparent; display: grid; place-items: center;
+  transition: border-color var(--duration-fast);
+}
+.pd-thumb img { width: 84%; height: 84%; object-fit: contain; }
+.pd-thumb:hover { border-color: hsl(var(--border)); }
+.pd-thumb.active { border-color: hsl(var(--primary)); }
+.pd-thumb:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+@media (max-width: 620px) { .pd-thumb { width: 58px; height: 58px; } }

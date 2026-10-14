@@ -106,6 +106,8 @@ const escapeHtml = (s) =>
   String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const productById = (id) => PRODUCTS.find((p) => p.id === id);
+/* A product's gallery: the `images` array when present, else the single `image`. */
+const productImages = (p) => (Array.isArray(p.images) && p.images.length ? p.images : [p.image]);
 const productImage = (p, eager = false) =>
   `<img src="${p.image}" alt="${p.name} — ${p.style}" ${eager ? "" : 'loading="lazy"'} />`;
 
@@ -393,7 +395,43 @@ function initProduct() {
 
   $("#pdBreadcrumb").innerHTML =
     `<a href="index.html">Home</a> / <a href="shop.html">Shop</a> / <a href="shop.html?cat=${p.category}">${p.category[0].toUpperCase() + p.category.slice(1)}</a> / <span>${p.name}</span>`;
-  $("#pdImage").innerHTML = (p.badge ? `<span class="product-badge">${p.badge}</span>` : "") + productImage(p, true);
+  // ---- Gallery: main shot plus a thumbnail strip when there's more than one ----
+  const shots = productImages(p);
+  const pdImage = $("#pdImage");
+  const pdThumbs = $("#pdThumbs");
+  let shot = 0;
+
+  function paintShot() {
+    pdImage.innerHTML =
+      (p.badge ? `<span class="product-badge">${p.badge}</span>` : "") +
+      `<img src="${shots[shot]}" alt="${escapeHtml(p.name)} — ${escapeHtml(p.style)}, view ${shot + 1} of ${shots.length}" />`;
+    $$(".pd-thumb", pdThumbs).forEach((b, i) => {
+      b.classList.toggle("active", i === shot);
+      b.setAttribute("aria-current", i === shot ? "true" : "false");
+    });
+  }
+  function showShot(i) { shot = (i + shots.length) % shots.length; paintShot(); }
+
+  if (shots.length > 1) {
+    pdThumbs.hidden = false;
+    pdThumbs.innerHTML = shots.map((src, i) =>
+      `<button type="button" class="pd-thumb" data-i="${i}" aria-label="View ${i + 1} of ${shots.length}"><img src="${src}" alt="" loading="lazy" /></button>`
+    ).join("");
+    pdThumbs.addEventListener("click", (e) => {
+      const b = e.target.closest(".pd-thumb");
+      if (b) showShot(+b.dataset.i);
+    });
+    // swipe through shots on touch devices
+    let x0 = null;
+    pdImage.addEventListener("touchstart", (e) => { x0 = e.changedTouches[0].clientX; }, { passive: true });
+    pdImage.addEventListener("touchend", (e) => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 40) showShot(shot + (dx < 0 ? 1 : -1));
+      x0 = null;
+    }, { passive: true });
+  }
+  paintShot();
   $("#pdCategory").textContent = p.category;
   $("#pdName").textContent = p.name;
   $("#pdStyle").textContent = p.style;

@@ -211,6 +211,7 @@ const PRODUCTS = [
   { id: "f17", name: "Iris", style: "Noir Brogue Oxford", category: "flats", price: 295, badge: null, featured: false, isNew: false, image: "images/flats-17.webp",
     description: "A classic black brogue oxford, broken-in soft. Heritage tailoring for her." },
   { id: "f18", name: "Colette", style: "Blush Mary Jane Ballerina", category: "flats", price: 425, badge: "New", featured: false, isNew: true, image: "images/flats-18.webp",
+    images: ["images/flats-18.webp", "images/flats-18-2.webp"],
     description: "Rose satin with twin buckled straps and a hand-tied bow. The ballet flat, dressed for dinner." },
 
   // ---------- BOOTS (9) ----------
