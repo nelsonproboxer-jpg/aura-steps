@@ -1,5 +1,5 @@
 /* ============================================================
-   AURA STEPS — shared site logic (header, theme, cart, pages)
+   AURA STEPS — shared site logic (header, cart, pages)
    ============================================================ */
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -111,21 +111,10 @@ const productImages = (p) => (Array.isArray(p.images) && p.images.length ? p.ima
 const productImage = (p, eager = false) =>
   `<img src="${p.image}" alt="${p.name} — ${p.style}" ${eager ? "" : 'loading="lazy"'} />`;
 
-/* ---------- Theme ---------- */
-
-function applyTheme(theme) {
-  document.documentElement.classList.toggle("dark", theme === "dark");
-  localStorage.setItem("aura-theme", theme);
-  const btn = $("#themeToggle");
-  if (btn) btn.innerHTML = theme === "dark" ? ICONS.sun : ICONS.moon;
-}
-
 /* ---------- Icons (inline SVG) ---------- */
 
 const ICONS = {
   bag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="21" height="21"><path d="M6 7h12l1.2 13a1 1 0 0 1-1 1.1H5.8a1 1 0 0 1-1-1.1L6 7Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg>',
-  sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="19" height="19"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.2M12 19.8V22M2 12h2.2M19.8 12H22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M19.1 4.9l-1.6 1.6M6.5 17.5l-1.6 1.6"/></svg>',
-  moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="19" height="19"><path d="M20.4 14.2A8.5 8.5 0 0 1 9.8 3.6a8.5 8.5 0 1 0 10.6 10.6Z"/></svg>',
   menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
   arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>',
   sparkle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="16" height="16"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3ZM19 16l.9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9L19 16Z"/></svg>',
@@ -173,18 +162,12 @@ function renderChrome(active) {
         ).join("")}
       </nav>
       <div class="nav-actions">
-        <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode"></button>
         <a class="icon-btn bag-btn" href="cart.html" aria-label="Shopping bag">
           ${ICONS.bag}<span class="cart-count" id="cartCount">0</span>
         </a>
         <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu">${ICONS.menu}</button>
       </div>
     </div>`;
-    const isDark = document.documentElement.classList.contains("dark");
-    $("#themeToggle").innerHTML = isDark ? ICONS.sun : ICONS.moon;
-    $("#themeToggle").addEventListener("click", () => {
-      applyTheme(document.documentElement.classList.contains("dark") ? "light" : "dark");
-    });
     $("#menuBtn").addEventListener("click", () => $("#navLinks").classList.toggle("open"));
   }
 
@@ -1099,7 +1082,6 @@ function pxTrack(kind, valueUsd, items) {
 
 document.addEventListener("DOMContentLoaded", () => {
   initPixels();
-  applyTheme(localStorage.getItem("aura-theme") || "light");
   const page = document.body.dataset.page;
   renderChrome(page === "home" ? "index.html" : page + ".html");
   updateCartBadge();
