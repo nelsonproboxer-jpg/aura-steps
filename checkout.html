@@ -56,6 +56,19 @@
           </div>
           <p class="field-msg" id="zipMsg" hidden></p>
 
+          <div class="delivery-upgrade" id="sameDayWrap" hidden>
+            <label class="delivery-card" for="coSameDay">
+              <input type="checkbox" id="coSameDay" />
+              <span class="delivery-body">
+                <span class="delivery-head">
+                  <span class="delivery-title">Same-day delivery</span>
+                  <span class="delivery-fee" id="sameDayFee"></span>
+                </span>
+                <span class="delivery-note">An event tonight and no time to spare? We'll get your order to your door today — available anywhere in the United States.</span>
+              </span>
+            </label>
+          </div>
+
           <h3>Payment method</h3>
           <div class="pay-tabs">
             <button type="button" class="pay-tab active" data-pay="card">💳 Card</button>
@@ -86,6 +99,7 @@
           <div id="coItems"></div>
           <div class="summary-line"><span>Subtotal</span><span id="coSubtotal"></span></div>
           <div class="summary-line"><span>Shipping</span><span id="coShipping"></span></div>
+          <div class="summary-line" id="coSameDayLine" hidden><span>Same-day delivery</span><span id="coSameDayFee"></span></div>
           <div class="summary-line total"><span>Total</span><span id="coTotal"></span></div>
         </aside>
       </div>

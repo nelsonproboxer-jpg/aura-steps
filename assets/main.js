@@ -544,17 +544,45 @@ function initCheckout() {
     return;
   }
   const sub = cartSubtotal(cart);
-  const ship = sub >= FREE_SHIPPING_OVER ? 0 : SHIPPING_FLAT;
   $("#coItems").innerHTML = cart.map((i) => {
     const p = productById(i.id);
     return `<div class="summary-item"><span>${p.name} · US ${i.size} × ${i.qty}</span><span data-usd="${unitUsd(p.price) * i.qty}">${money(unitUsd(p.price) * i.qty)}</span></div>`;
   }).join("");
   setPrice($("#coSubtotal"), sub);
-  const coShipEl = $("#coShipping");
-  if (ship === 0) { delete coShipEl.dataset.usd; coShipEl.textContent = "Complimentary"; }
-  else setPrice(coShipEl, ship);
-  setPrice($("#coTotal"), sub + ship);
-  const total = sub + ship;
+
+  // ---- Totals. Recomputed whenever the country or the same-day choice changes,
+  // so `total` is always what the shopper is about to be charged. ----
+  const sameDayBox = $("#coSameDay");
+  const sameDayWrap = $("#sameDayWrap");
+  const baseShip = sub >= FREE_SHIPPING_OVER ? 0 : SHIPPING_FLAT;
+  let total = sub + baseShip;
+
+  const sameDayOffered = (cc) =>
+    typeof SAME_DAY !== "undefined" && SAME_DAY.active && SAME_DAY.countries.indexOf(cc) !== -1;
+  const sameDayChosen = () => !!(sameDayBox && sameDayBox.checked);
+
+  function renderTotals(cc) {
+    const fee = sameDayOffered(cc) && sameDayChosen() ? SAME_DAY.fee : 0;
+    const shipEl = $("#coShipping");
+    if (baseShip === 0) { delete shipEl.dataset.usd; shipEl.textContent = "Complimentary"; }
+    else setPrice(shipEl, baseShip);
+    const line = $("#coSameDayLine");
+    line.hidden = fee === 0;
+    if (fee) setPrice($("#coSameDayFee"), fee);
+    total = sub + baseShip + fee;
+    setPrice($("#coTotal"), total);
+  }
+
+  // Show the upgrade only where it's offered, and never leave it checked elsewhere.
+  function syncSameDay(cc) {
+    const offered = sameDayOffered(cc);
+    if (sameDayWrap) sameDayWrap.hidden = !offered;
+    if (!offered && sameDayBox) sameDayBox.checked = false;
+    if (offered) setPrice($("#sameDayFee"), SAME_DAY.fee);
+    renderTotals(cc);
+  }
+  if (sameDayBox) sameDayBox.addEventListener("change", () => renderTotals(countrySel.value));
+
   pxTrack("checkout", total, cart.map((i) => { const pp = productById(i.id); return { id: i.id, name: pp.name, usd: unitUsd(pp.price), qty: i.qty }; }));
 
   const showWallet = (coin) => {
@@ -612,6 +640,7 @@ function initCheckout() {
       zipInput.required = false;
     }
     setZipMsg("", "");
+    syncSameDay(cc);
   }
   applyCountry(countrySel.value || "US");
   countrySel.addEventListener("change", () => {
@@ -782,6 +811,7 @@ function initCheckout() {
       postal: zipInput.value.trim(),
       country: (typeof COUNTRY_BY_CODE !== "undefined" && COUNTRY_BY_CODE[countrySel.value] && COUNTRY_BY_CODE[countrySel.value].n) || countrySel.value,
       countryCode: countrySel.value,
+      sameDay: sameDayOffered(countrySel.value) && sameDayChosen(),
     };
     const ref = "AS-" + Math.floor(100000 + Math.random() * 900000);
     if (method === "card") {
@@ -905,6 +935,7 @@ function sendOrderEmail({ ref, total, cart, shipping, method }) {
     Total_USD: usdTotal,
     Customer_saw: shownTotal,
     Paid_with: method,
+    Delivery: shipping.sameDay ? "*** SAME-DAY DELIVERY — dispatch today ***" : "Standard",
     Items: items,
     Customer: `${shipping.firstName} ${shipping.lastName}`,
     email: shipping.email,

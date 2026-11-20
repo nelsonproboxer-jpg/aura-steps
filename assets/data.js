@@ -33,6 +33,16 @@ const SALE = {
    currency is displayed locally but charged in USD. */
 const FLW_CURRENCIES = ["USD", "NGN", "GBP", "EUR", "GHS", "KES", "ZAR", "TZS", "UGX", "RWF", "ZMW", "MWK", "XAF", "XOF", "EGP", "MAD"];
 
+/* ---- Same-day delivery ----
+   An optional express upgrade offered only in the countries listed here. The
+   fee is in USD like every other price and converts to the shopper's currency.
+   Set active:false to withdraw the option everywhere. */
+const SAME_DAY = {
+  active: true,
+  countries: ["US"],
+  fee: 150,
+};
+
 /* Every country + its primary currency (ISO 4217). We ship worldwide. */
 const COUNTRY_DATA = [
   ["US","United States","USD"],["GB","United Kingdom","GBP"],["CA","Canada","CAD"],["AU","Australia","AUD"],["NZ","New Zealand","NZD"],
