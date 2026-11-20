@@ -262,7 +262,7 @@ const PRODUCTS = [
     images: ["images/boots-06.webp", "images/boots-06-2.webp", "images/boots-06-3.webp", "images/boots-06-4.webp"],
     description: "Twin exposed zips on polished black calf — architectural, minimal, quietly rebellious." },
   { id: "b12", name: "Margaux", style: "Brandy Brogue Boot", category: "boots", price: 810, badge: null, featured: false, isNew: false, image: "images/boots-12.webp",
-    images: ["images/boots-12.webp", "images/boots-12-2.webp", "images/boots-12-3.webp"],
+    images: ["images/boots-12.webp", "images/boots-12-2.webp", "images/boots-12-3.webp", "images/boots-12-4.webp"],
     description: "Hand-burnished brandy leather with full brogue detailing. Heritage craftsmanship, heirloom future." },
   { id: "b13", name: "Nadia", style: "Noir Western Mid-Boot", category: "boots", price: 1080, badge: "Limited", featured: false, isNew: false, image: "images/boots-13.webp",
     images: ["images/boots-13.webp", "images/boots-13-2.webp", "images/boots-13-3.webp", "images/boots-13-4.webp"],
