@@ -205,7 +205,8 @@ function renderChrome(active) {
         <span class="footer-addr">${SUPPORT_ADDRESS}</span>
       </div>
     </div>
-    <p class="footer-note">© 2026 Aura Steps · Walk in your own aura.</p>`;
+    <p class="footer-note">© 2026 Aura Steps · Walk in your own aura.</p>
+    <p class="footer-legal">Aura Steps is an independent retailer. We are not affiliated with, endorsed by or sponsored by any third-party brand, and all trademarks are the property of their respective owners. See our <a href="terms.html">Terms</a>.</p>`;
   }
 }
 
