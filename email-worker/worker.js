@@ -92,6 +92,7 @@ function renderHtml(o) {
 
   return `<!doctype html>
 <html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#faf7f1;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Your Aura Steps order ${esc(o.ref)} is confirmed.</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#faf7f1;padding:28px 12px;">
@@ -111,6 +112,14 @@ function renderHtml(o) {
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
             ${renderRows(o.items)}
+            ${o.sameDay ? `
+            <tr>
+              <td style="padding:14px 0;border-bottom:1px solid #ece3d4;">
+                <div style="font-family:Georgia,'Times New Roman',serif;font-size:17px;color:#2b2622;">Same-day delivery</div>
+                <div style="font-size:13px;color:#8a7d6b;margin-top:2px;">Arriving today</div>
+              </td>
+              <td style="padding:14px 0;border-bottom:1px solid #ece3d4;text-align:right;font-size:15px;color:#2b2622;white-space:nowrap;">${esc(o.sameDayFee)}</td>
+            </tr>` : ""}
             <tr>
               <td style="padding:16px 0 0;font-family:Georgia,serif;font-size:18px;color:#2b2622;">Total</td>
               <td style="padding:16px 0 0;text-align:right;font-family:Georgia,serif;font-size:18px;font-weight:bold;color:#4a2040;">${esc(o.total)}</td>
@@ -119,9 +128,10 @@ function renderHtml(o) {
           <div style="margin:26px 0 0;padding:18px 20px;background:#faf7f1;border-radius:12px;">
             <p style="margin:0 0 6px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8a7d6b;font-family:Arial,sans-serif;">Shipping to</p>
             <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#2b2622;">${shipLines}</p>
+            ${o.sameDay ? `<p style="margin:12px 0 0;"><span style="display:inline-block;background:#f4e7d6;color:#8a5a1f;border-radius:999px;padding:5px 13px;font-family:Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;">Same-day delivery</span></p>` : ""}
           </div>
           <p style="margin:26px 0 0;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#55503f;">
-            We'll email you again as soon as your order ships. Questions? Just reply to this email or reach us at
+            ${o.sameDay ? "Your order is going out for delivery today." : "We'll email you again as soon as your order ships."} Questions? Just reply to this email or reach us at
             <a href="mailto:support@aurastepsusa.com" style="color:#b08d57;">support@aurastepsusa.com</a>.
           </p>
         </td></tr>
@@ -146,16 +156,16 @@ function renderText(o) {
 We've received your Aura Steps order and it's being prepared with care.
 
 Order: ${o.ref}
-${items}
+${items}${o.sameDay ? `\n- Same-day delivery (arriving today) — ${o.sameDayFee}` : ""}
 Total: ${o.total}
 
 Shipping to:
 ${o.firstName} ${o.lastName}
 ${ship.line1}${ship.line2 ? ", " + ship.line2 : ""}
 ${ship.city}, ${ship.state} ${ship.postal}
-${ship.country}
+${ship.country}${o.sameDay ? "\n\nSAME-DAY DELIVERY — your order is going out for delivery today." : ""}
 
-We'll email you again when your order ships. Questions? Reply here or write to support@aurastepsusa.com.
+${o.sameDay ? "Questions? Reply here or write to support@aurastepsusa.com." : "We'll email you again when your order ships. Questions? Reply here or write to support@aurastepsusa.com."}
 
 Walk in your own aura,
 Aura Steps

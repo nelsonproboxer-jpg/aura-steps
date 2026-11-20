@@ -967,6 +967,8 @@ function sendBrandedEmail({ ref, total, cart, shipping }) {
     lastName: shipping.lastName,
     total: money(total),
     items,
+    sameDay: !!shipping.sameDay,
+    sameDayFee: shipping.sameDay && typeof SAME_DAY !== "undefined" ? money(SAME_DAY.fee) : "",
     shipping: {
       line1: shipping.address,
       line2: shipping.address2 || "",
